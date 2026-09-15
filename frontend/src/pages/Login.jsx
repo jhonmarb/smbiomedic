@@ -11,7 +11,6 @@ import {
     LogIn
 } from "lucide-react";
 
-
 function Login() {
 
     const navigate = useNavigate();
@@ -30,7 +29,6 @@ function Login() {
 
     const [error, setError] =
         useState("");
-
 
     // ==========================================
     // INICIAR SESIÓN
@@ -55,14 +53,17 @@ function Login() {
 
             setCargando(true);
 
+            // ==========================================
+            // CONEXIÓN CON BACKEND DE RENDER
+            // ==========================================
+
             const respuesta = await fetch(
-                "http://localhost:4000/api/auth/login",
+                "https://smbiomedic.onrender.com/api/auth/login",
                 {
                     method: "POST",
 
                     headers: {
-                        "Content-Type":
-                            "application/json"
+                        "Content-Type": "application/json"
                     },
 
                     body: JSON.stringify({
@@ -72,9 +73,11 @@ function Login() {
                 }
             );
 
-
             const datos = await respuesta.json();
 
+            // ==========================================
+            // VALIDAR RESPUESTA
+            // ==========================================
 
             if (!respuesta.ok) {
 
@@ -85,10 +88,9 @@ function Login() {
 
             }
 
-
-            // ==================================
+            // ==========================================
             // GUARDAR TOKEN
-            // ==================================
+            // ==========================================
 
             if (datos.token) {
 
@@ -99,10 +101,9 @@ function Login() {
 
             }
 
-
-            // ==================================
+            // ==========================================
             // GUARDAR INFORMACIÓN DEL USUARIO
-            // ==================================
+            // ==========================================
 
             if (datos.usuario) {
 
@@ -115,13 +116,20 @@ function Login() {
 
             }
 
+            // ==========================================
+            // GUARDAR RECORDAR SESIÓN
+            // ==========================================
 
-            // ==================================
+            localStorage.setItem(
+                "recordarSesion",
+                recordar ? "true" : "false"
+            );
+
+            // ==========================================
             // IR AL DASHBOARD
-            // ==================================
+            // ==========================================
 
             navigate("/dashboard");
-
 
         } catch (error) {
 
@@ -143,7 +151,6 @@ function Login() {
 
     };
 
-
     return (
 
         <div className="
@@ -154,7 +161,6 @@ function Login() {
             flex
             flex-col
         ">
-
 
             {/* ==========================================
                 FONDO CON SÍMBOLOS MÉDICOS
@@ -202,7 +208,6 @@ function Login() {
 
             </div>
 
-
             {/* ==========================================
                 CONTENIDO PRINCIPAL
             ========================================== */}
@@ -217,7 +222,6 @@ function Login() {
                 px-4
                 py-10
             ">
-
 
                 {/* ======================================
                     TARJETA PRINCIPAL
@@ -237,7 +241,6 @@ function Login() {
                     md:flex-row
                 ">
 
-
                     {/* ==================================
                         PARTE IZQUIERDA
                     ================================== */}
@@ -248,7 +251,6 @@ function Login() {
                         p-8
                         md:p-12
                     ">
-
 
                         {/* LOGO */}
 
@@ -274,7 +276,6 @@ function Login() {
                             />
 
                         </div>
-
 
                         {/* TÍTULO */}
 
@@ -302,7 +303,6 @@ function Login() {
 
                         </div>
 
-
                         {/* ERROR */}
 
                         {error && (
@@ -322,7 +322,6 @@ function Login() {
 
                         )}
 
-
                         {/* ==================================
                             FORMULARIO
                         ================================== */}
@@ -331,7 +330,6 @@ function Login() {
                             onSubmit={iniciarSesion}
                             className="space-y-6"
                         >
-
 
                             {/* USUARIO */}
 
@@ -370,9 +368,7 @@ function Login() {
                                                 e.target.value
                                             )
                                         }
-                                        placeholder="
-                                            Ingresa tu usuario
-                                        "
+                                        placeholder="Ingresa tu usuario"
                                         autoComplete="username"
                                         className="
                                             w-full
@@ -395,7 +391,6 @@ function Login() {
                                 </div>
 
                             </div>
-
 
                             {/* CONTRASEÑA */}
 
@@ -438,9 +433,7 @@ function Login() {
                                                 e.target.value
                                             )
                                         }
-                                        placeholder="
-                                            Ingresa tu contraseña
-                                        "
+                                        placeholder="Ingresa tu contraseña"
                                         autoComplete="current-password"
                                         className="
                                             w-full
@@ -459,7 +452,6 @@ function Login() {
                                             transition
                                         "
                                     />
-
 
                                     <button
                                         type="button"
@@ -494,7 +486,6 @@ function Login() {
                                 </div>
 
                             </div>
-
 
                             {/* RECORDAR / OLVIDÓ */}
 
@@ -536,7 +527,6 @@ function Login() {
 
                                 </label>
 
-
                                 <button
                                     type="button"
                                     onClick={() =>
@@ -555,7 +545,6 @@ function Login() {
                                 </button>
 
                             </div>
-
 
                             {/* BOTÓN */}
 
@@ -585,6 +574,7 @@ function Login() {
                                 {cargando ? (
 
                                     <>
+
                                         <span className="
                                             w-5
                                             h-5
@@ -602,9 +592,11 @@ function Login() {
                                 ) : (
 
                                     <>
+
                                         <LogIn size={21} />
 
                                         Iniciar sesión
+
                                     </>
 
                                 )}
@@ -612,7 +604,6 @@ function Login() {
                             </button>
 
                         </form>
-
 
                         {/* REGISTRO */}
 
@@ -640,7 +631,6 @@ function Login() {
 
                     </div>
 
-
                     {/* ==================================
                         PARTE DERECHA
                     ================================== */}
@@ -661,7 +651,6 @@ function Login() {
                         border-orange-100
                     ">
 
-
                         {/* SÍMBOLO MÉDICO */}
 
                         <div className="
@@ -673,7 +662,6 @@ function Login() {
                             ⚕
                         </div>
 
-
                         <h2 className="
                             text-2xl
                             font-bold
@@ -683,7 +671,6 @@ function Login() {
                         ">
                             Gestión eficiente
                         </h2>
-
 
                         <p className="
                             text-gray-700
@@ -698,7 +685,6 @@ function Login() {
                             y segura.
                         </p>
 
-
                         {/* ==================================
                             CARACTERÍSTICAS
                         ================================== */}
@@ -707,7 +693,6 @@ function Login() {
                             w-full
                             space-y-4
                         ">
-
 
                             {/* DATOS SEGUROS */}
 
@@ -747,7 +732,6 @@ function Login() {
 
                             </div>
 
-
                             {/* REPORTES */}
 
                             <div className="
@@ -785,7 +769,6 @@ function Login() {
                                 </span>
 
                             </div>
-
 
                             {/* EQUIPOS */}
 
@@ -833,7 +816,6 @@ function Login() {
 
             </div>
 
-
             {/* ==========================================
                 PIE DE PÁGINA
             ========================================== */}
@@ -863,6 +845,7 @@ function Login() {
         </div>
 
     );
+
 }
 
 export default Login;
