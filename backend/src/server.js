@@ -13,20 +13,42 @@ import usuarioRoutes from "./routes/usuario.routes.js";
 
 dotenv.config();
 
-// Comprobar que el archivo .env está siendo leído
-console.log("MONGO_URI cargada:", !!process.env.MONGO_URI);
+// ===============================
+// COMPROBAR VARIABLES DE ENTORNO
+// ===============================
 
+const mongoUri = process.env.MONGO_URI?.trim();
+const puerto = process.env.PORT || 4000;
+
+console.log("MONGO_URI cargada:", !!mongoUri);
 console.log(
-    "Usuario Mongo:",
-    process.env.MONGO_URI?.split("://")[1]?.split(":")[0]
+    "MONGO_URI empieza correctamente:",
+    mongoUri?.startsWith("mongodb+srv://")
 );
+
+if (mongoUri) {
+    const usuarioMongo = mongoUri
+        .replace("mongodb+srv://", "")
+        .split(":")[0];
+
+    console.log("Usuario Mongo:", usuarioMongo);
+}
+
+console.log("Puerto:", puerto);
+
+// ===============================
+// CREAR APLICACIÓN
+// ===============================
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Carpeta para archivos subidos
+// ===============================
+// CARPETA UPLOADS
+// ===============================
+
 const carpetaUploads = path.resolve("uploads");
 
 if (!fs.existsSync(carpetaUploads)) {
@@ -35,30 +57,42 @@ if (!fs.existsSync(carpetaUploads)) {
 
 app.use("/uploads", express.static(carpetaUploads));
 
-// Rutas
+// ===============================
+// RUTAS
+// ===============================
+
 app.use("/api/auth", authRoutes);
 app.use("/api/maquinas", maquinaRoutes);
 app.use("/api/mantenimientos", mantenimientoRoutes);
 app.use("/api/intervenciones", intervencionRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 
-// Ruta principal
+// ===============================
+// RUTA PRINCIPAL
+// ===============================
+
 app.get("/", (req, res) => {
     res.json({
         mensaje: "API de mantenimiento hospitalario funcionando"
     });
 });
 
-// Conexión con MongoDB
-mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log("MongoDB conectado");
+// ===============================
+// CONEXIÓN MONGODB
+// ===============================
 
-        app.listen(process.env.PORT, () => {
-            console.log(
-                `Servidor funcionando en http://localhost:${process.env.PORT}`
-            );
+if (!mongoUri) {
+    console.error("ERROR: MONGO_URI no está configurada.");
+    process.exit(1);
+}
+
+mongoose
+    .connect(mongoUri)
+    .then(() => {
+        console.log("MongoDB conectado correctamente");
+
+        app.listen(puerto, "0.0.0.0", () => {
+            console.log(`Servidor funcionando en el puerto ${puerto}`);
         });
     })
     .catch((error) => {
