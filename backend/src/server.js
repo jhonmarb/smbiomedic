@@ -13,11 +13,20 @@ import usuarioRoutes from "./routes/usuario.routes.js";
 
 dotenv.config();
 
+// Comprobar que el archivo .env está siendo leído
+console.log("MONGO_URI cargada:", !!process.env.MONGO_URI);
+
+console.log(
+    "Usuario Mongo:",
+    process.env.MONGO_URI?.split("://")[1]?.split(":")[0]
+);
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// Carpeta para archivos subidos
 const carpetaUploads = path.resolve("uploads");
 
 if (!fs.existsSync(carpetaUploads)) {
@@ -26,18 +35,21 @@ if (!fs.existsSync(carpetaUploads)) {
 
 app.use("/uploads", express.static(carpetaUploads));
 
+// Rutas
 app.use("/api/auth", authRoutes);
 app.use("/api/maquinas", maquinaRoutes);
 app.use("/api/mantenimientos", mantenimientoRoutes);
 app.use("/api/intervenciones", intervencionRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 
+// Ruta principal
 app.get("/", (req, res) => {
     res.json({
         mensaje: "API de mantenimiento hospitalario funcionando"
     });
 });
 
+// Conexión con MongoDB
 mongoose
     .connect(process.env.MONGO_URI)
     .then(() => {
