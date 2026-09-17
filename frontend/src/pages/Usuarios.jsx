@@ -1,3 +1,4 @@
+jsx
 import { useEffect, useState } from "react";
 
 function Usuarios() {
@@ -38,16 +39,18 @@ function Usuarios() {
             setCargando(true);
 
             const respuesta = await fetch(
-                "http://localhost:4000/api/usuarios"
+                "https://smbiomedic.onrender.com/api/usuarios"
             );
 
             const datos = await respuesta.json();
 
             if (!respuesta.ok) {
+
                 throw new Error(
                     datos.mensaje ||
                     "Error al cargar usuarios"
                 );
+
             }
 
             setUsuarios(datos);
@@ -66,6 +69,7 @@ function Usuarios() {
             setCargando(false);
 
         }
+
     };
 
 
@@ -74,7 +78,9 @@ function Usuarios() {
     // =====================================================
 
     useEffect(() => {
+
         cargarUsuarios();
+
     }, []);
 
 
@@ -191,11 +197,12 @@ function Usuarios() {
                     );
 
                     return;
+
                 }
 
 
                 const respuesta = await fetch(
-                    "http://localhost:4000/api/usuarios",
+                    "https://smbiomedic.onrender.com/api/usuarios",
                     {
                         method: "POST",
 
@@ -231,6 +238,7 @@ function Usuarios() {
 
             }
 
+
             // ==========================================
             // EDITAR
             // ==========================================
@@ -238,7 +246,7 @@ function Usuarios() {
             else {
 
                 const respuesta = await fetch(
-                    `http://localhost:4000/api/usuarios/${editando._id}`,
+                    `https://smbiomedic.onrender.com/api/usuarios/${editando._id}`,
                     {
                         method: "PUT",
 
@@ -303,7 +311,7 @@ function Usuarios() {
         try {
 
             const respuesta = await fetch(
-                `http://localhost:4000/api/usuarios/${usuario._id}/estado`,
+                `https://smbiomedic.onrender.com/api/usuarios/${usuario._id}/estado`,
                 {
                     method: "PATCH",
 
@@ -362,14 +370,16 @@ function Usuarios() {
 
 
         if (!confirmar) {
+
             return;
+
         }
 
 
         try {
 
             const respuesta = await fetch(
-                `http://localhost:4000/api/usuarios/${usuario._id}`,
+                `https://smbiomedic.onrender.com/api/usuarios/${usuario._id}`,
                 {
                     method: "DELETE"
                 }
@@ -419,15 +429,21 @@ function Usuarios() {
     const nombreRol = (rol) => {
 
         if (rol === "admin") {
+
             return "Administrador";
+
         }
 
         if (rol === "tecnico") {
+
             return "Técnico";
+
         }
 
         if (rol === "consulta") {
+
             return "Consulta";
+
         }
 
         return rol;
@@ -466,7 +482,9 @@ function Usuarios() {
                     onClick={nuevoUsuario}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold"
                 >
+
                     + Nuevo usuario
+
                 </button>
 
             </div>
@@ -705,7 +723,9 @@ function Usuarios() {
                             onClick={nuevoUsuario}
                             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                         >
+
                             Crear primer usuario
+
                         </button>
 
                     </div>
@@ -907,6 +927,8 @@ function Usuarios() {
         </div>
 
     );
+
 }
 
 export default Usuarios;
+

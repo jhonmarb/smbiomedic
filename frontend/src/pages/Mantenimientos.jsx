@@ -7,6 +7,13 @@ import {
 function Mantenimientos() {
 
     // =====================================================
+    // URL DEL BACKEND
+    // =====================================================
+
+    const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+    // =====================================================
     // ESTADOS
     // =====================================================
 
@@ -73,7 +80,7 @@ function Mantenimientos() {
         try {
 
             const respuesta = await fetch(
-                "http://localhost:4000/api/mantenimientos",
+                `${API_URL}/api/mantenimientos`,
                 {
                     headers: {
                         Authorization:
@@ -121,7 +128,7 @@ function Mantenimientos() {
         try {
 
             const respuesta = await fetch(
-                "http://localhost:4000/api/maquinas",
+                `${API_URL}/api/maquinas`,
                 {
                     headers: {
                         Authorization:
@@ -244,7 +251,7 @@ function Mantenimientos() {
 
             const respuesta =
                 await fetch(
-                    "http://localhost:4000/api/mantenimientos",
+                    `${API_URL}/api/mantenimientos`,
                     {
                         method: "POST",
 
@@ -452,7 +459,15 @@ function Mantenimientos() {
 
     const obtenerUrlArchivo = (ruta) => {
 
-        return `http://localhost:4000${ruta}`;
+        if (!ruta) {
+            return "";
+        }
+
+        if (ruta.startsWith("http")) {
+            return ruta;
+        }
+
+        return `${API_URL}${ruta}`;
 
     };
 

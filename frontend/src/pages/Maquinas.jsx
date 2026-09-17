@@ -1,19 +1,14 @@
+jsx
 import { useEffect, useState } from "react";
 
 function Maquinas() {
 
     const [maquinas, setMaquinas] = useState([]);
-
     const [nombre, setNombre] = useState("");
-
     const [areaSoporte, setAreaSoporte] = useState("");
-
     const [archivo, setArchivo] = useState(null);
-
     const [mensaje, setMensaje] = useState("");
-
     const [cargando, setCargando] = useState(false);
-
 
     // ==============================================
     // OBTENER USUARIO
@@ -40,7 +35,7 @@ function Maquinas() {
         try {
 
             const respuesta = await fetch(
-                "http://localhost:4000/api/maquinas",
+                "https://smbiomedic.onrender.com/api/maquinas",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -120,7 +115,7 @@ function Maquinas() {
 
 
             const respuesta = await fetch(
-                "http://localhost:4000/api/maquinas",
+                "https://smbiomedic.onrender.com/api/maquinas",
                 {
                     method: "POST",
 
@@ -191,7 +186,7 @@ function Maquinas() {
     const descargarArchivo = (ruta) => {
 
         window.open(
-            `http://localhost:4000${ruta}`,
+            `https://smbiomedic.onrender.com${ruta}`,
             "_blank"
         );
 
@@ -763,3 +758,4 @@ function Maquinas() {
 }
 
 export default Maquinas;
+

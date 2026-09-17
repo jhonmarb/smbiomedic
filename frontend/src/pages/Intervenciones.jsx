@@ -5,6 +5,14 @@ import {
 } from "react";
 
 
+// =====================================================
+// URL DEL BACKEND
+// =====================================================
+
+const API_URL =
+    "https://smbiomedic.onrender.com";
+
+
 function Intervenciones() {
 
     // =====================================================
@@ -89,7 +97,7 @@ function Intervenciones() {
 
             const respuesta =
                 await fetch(
-                    "http://localhost:4000/api/intervenciones",
+                    `${API_URL}/api/intervenciones`,
                     {
                         headers: {
                             Authorization:
@@ -115,7 +123,10 @@ function Intervenciones() {
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Error cargando intervenciones:",
+                error
+            );
 
             setMensaje(
                 "No se pudo conectar con el servidor"
@@ -140,7 +151,7 @@ function Intervenciones() {
 
             const respuesta =
                 await fetch(
-                    "http://localhost:4000/api/maquinas",
+                    `${API_URL}/api/maquinas`,
                     {
                         headers: {
                             Authorization:
@@ -160,7 +171,10 @@ function Intervenciones() {
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Error cargando máquinas:",
+                error
+            );
 
         }
 
@@ -280,7 +294,7 @@ function Intervenciones() {
 
             const respuesta =
                 await fetch(
-                    "http://localhost:4000/api/intervenciones",
+                    `${API_URL}/api/intervenciones`,
                     {
                         method: "POST",
 
@@ -505,7 +519,19 @@ function Intervenciones() {
 
     const obtenerUrlArchivo = (ruta) => {
 
-        return `http://localhost:4000${ruta}`;
+        if (!ruta) {
+            return "";
+        }
+
+        // Si la ruta ya es una URL completa
+        if (
+            ruta.startsWith("http://") ||
+            ruta.startsWith("https://")
+        ) {
+            return ruta;
+        }
+
+        return `${API_URL}${ruta}`;
 
     };
 
@@ -1388,10 +1414,6 @@ function Intervenciones() {
                 }
 
 
-                /* =========================================
-                   ENCABEZADO
-                ========================================= */
-
                 .encabezado-pagina {
 
                     margin-bottom: 25px;
@@ -1422,10 +1444,6 @@ function Intervenciones() {
 
                 }
 
-
-                /* =========================================
-                   USUARIO
-                ========================================= */
 
                 .usuario-info {
 
@@ -1489,10 +1507,6 @@ function Intervenciones() {
                 }
 
 
-                /* =========================================
-                   MENSAJES
-                ========================================= */
-
                 .mensaje {
 
                     padding: 12px 15px;
@@ -1527,10 +1541,6 @@ function Intervenciones() {
 
                 }
 
-
-                /* =========================================
-                   HISTORIAL
-                ========================================= */
 
                 .historial {
 
@@ -1575,10 +1585,6 @@ function Intervenciones() {
 
                 }
 
-
-                /* =========================================
-                   BOTÓN NUEVO
-                ========================================= */
 
                 .boton-nuevo {
 
@@ -1639,10 +1645,6 @@ function Intervenciones() {
 
                 }
 
-
-                /* =========================================
-                   TARJETAS
-                ========================================= */
 
                 .lista-mantenimientos {
 
@@ -1731,10 +1733,6 @@ function Intervenciones() {
                 }
 
 
-                /* =========================================
-                   DATOS
-                ========================================= */
-
                 .informacion-mantenimiento {
 
                     display: grid;
@@ -1788,10 +1786,6 @@ function Intervenciones() {
                 }
 
 
-                /* =========================================
-                   DESCRIPCIÓN Y EQUIPOS
-                ========================================= */
-
                 .seccion-dato {
 
                     margin-top: 18px;
@@ -1829,10 +1823,6 @@ function Intervenciones() {
 
                 }
 
-
-                /* =========================================
-                   ARCHIVOS
-                ========================================= */
 
                 .seccion-archivos {
 
@@ -1986,10 +1976,6 @@ function Intervenciones() {
                 }
 
 
-                /* =========================================
-                   ESTADO VACÍO
-                ========================================= */
-
                 .estado {
 
                     text-align: center;
@@ -2030,10 +2016,6 @@ function Intervenciones() {
 
                 }
 
-
-                /* =========================================
-                   FORMULARIO
-                ========================================= */
 
                 .formulario-contenedor {
 
@@ -2207,10 +2189,6 @@ function Intervenciones() {
                 }
 
 
-                /* =========================================
-                   BOTÓN ARCHIVOS
-                ========================================= */
-
                 .boton-archivos {
 
                     width: fit-content;
@@ -2250,10 +2228,6 @@ function Intervenciones() {
 
                 }
 
-
-                /* =========================================
-                   ARCHIVOS SELECCIONADOS
-                ========================================= */
 
                 .archivos-seleccionados {
 
@@ -2382,10 +2356,6 @@ function Intervenciones() {
                 }
 
 
-                /* =========================================
-                   ACCIONES
-                ========================================= */
-
                 .acciones-formulario {
 
                     grid-column: 1 / -1;
@@ -2469,10 +2439,6 @@ function Intervenciones() {
 
                 }
 
-
-                /* =========================================
-                   RESPONSIVE
-                ========================================= */
 
                 @media (max-width: 750px) {
 
