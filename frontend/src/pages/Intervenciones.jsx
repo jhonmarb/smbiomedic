@@ -1934,4 +1934,4 @@ function Intervenciones() {
     );
 }
 
-
+export default Intervenciones;
