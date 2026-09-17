@@ -39,6 +39,8 @@ function Mantenimientos() {
 
     const [archivos, setArchivos] = useState([]);
 
+    const [guardando, setGuardando] = useState(false);
+
 
     // =====================================================
     // REFERENCIA ARCHIVOS
@@ -84,16 +86,19 @@ function Mantenimientos() {
 
     const rolUsuario =
         usuario?.rol
-            ? String(usuario.rol).toLowerCase()
+            ? String(usuario.rol)
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim()
             : "";
-
 
     const esTecnico =
         rolUsuario === "tecnico";
 
 
     // =====================================================
-    // CARGAR DATOS AL ENTRAR
+    // CARGAR DATOS
     // =====================================================
 
     useEffect(() => {
@@ -109,7 +114,6 @@ function Mantenimientos() {
             return;
 
         }
-
 
         cargarMantenimientos();
 
@@ -130,7 +134,6 @@ function Mantenimientos() {
 
             setMensaje("");
 
-
             const respuesta = await fetch(
                 `${API_URL}/api/mantenimientos`,
                 {
@@ -143,10 +146,8 @@ function Mantenimientos() {
                 }
             );
 
-
             const texto =
                 await respuesta.text();
-
 
             let datos = [];
 
@@ -171,13 +172,12 @@ function Mantenimientos() {
                 setMantenimientos([]);
 
                 return;
-
             }
 
 
-            // =============================================
+            // =================================================
             // ERROR DEL SERVIDOR
-            // =============================================
+            // =================================================
 
             if (!respuesta.ok) {
 
@@ -186,24 +186,21 @@ function Mantenimientos() {
                     datos
                 );
 
-
                 setMensaje(
                     datos.mensaje ||
                     datos.error ||
                     `Error obteniendo mantenimientos (${respuesta.status})`
                 );
 
-
                 setMantenimientos([]);
 
                 return;
-
             }
 
 
-            // =============================================
-            // ASEGURAR QUE SEA UN ARRAY
-            // =============================================
+            // =================================================
+            // ASEGURAR ARRAY
+            // =================================================
 
             if (Array.isArray(datos)) {
 
@@ -228,7 +225,6 @@ function Mantenimientos() {
 
             }
 
-
         } catch (error) {
 
             console.error(
@@ -236,14 +232,11 @@ function Mantenimientos() {
                 error
             );
 
-
             setMensaje(
                 "No se pudo conectar con el servidor."
             );
 
-
             setMantenimientos([]);
-
 
         } finally {
 
@@ -274,10 +267,8 @@ function Mantenimientos() {
                 }
             );
 
-
             const texto =
                 await respuesta.text();
-
 
             let datos = [];
 
@@ -299,7 +290,6 @@ function Mantenimientos() {
 
             }
 
-
             if (!respuesta.ok) {
 
                 console.error(
@@ -310,7 +300,6 @@ function Mantenimientos() {
                 return;
 
             }
-
 
             if (Array.isArray(datos)) {
 
@@ -329,7 +318,6 @@ function Mantenimientos() {
                 setMaquinas([]);
 
             }
-
 
         } catch (error) {
 
@@ -354,9 +342,9 @@ function Mantenimientos() {
         setMensaje("");
 
 
-        // =============================================
+        // =================================================
         // VALIDAR SESIÓN
-        // =============================================
+        // =================================================
 
         if (!token) {
 
@@ -369,9 +357,9 @@ function Mantenimientos() {
         }
 
 
-        // =============================================
+        // =================================================
         // VALIDAR ROL
-        // =============================================
+        // =================================================
 
         if (!esTecnico) {
 
@@ -384,9 +372,9 @@ function Mantenimientos() {
         }
 
 
-        // =============================================
+        // =================================================
         // VALIDAR MÁQUINA
-        // =============================================
+        // =================================================
 
         if (!maquina) {
 
@@ -399,9 +387,9 @@ function Mantenimientos() {
         }
 
 
-        // =============================================
+        // =================================================
         // VALIDAR FECHA
-        // =============================================
+        // =================================================
 
         if (!fecha) {
 
@@ -414,9 +402,9 @@ function Mantenimientos() {
         }
 
 
-        // =============================================
+        // =================================================
         // VALIDAR ARCHIVOS
-        // =============================================
+        // =================================================
 
         if (archivos.length === 0) {
 
@@ -430,6 +418,8 @@ function Mantenimientos() {
 
 
         try {
+
+            setGuardando(true);
 
             const formulario =
                 new FormData();
@@ -459,9 +449,9 @@ function Mantenimientos() {
             );
 
 
-            // =========================================
-            // AGREGAR TODOS LOS ARCHIVOS
-            // =========================================
+            // =================================================
+            // AGREGAR ARCHIVOS
+            // =================================================
 
             archivos.forEach((archivo) => {
 
@@ -485,9 +475,9 @@ function Mantenimientos() {
             );
 
 
-            // =========================================
+            // =================================================
             // ENVIAR AL BACKEND
-            // =========================================
+            // =================================================
 
             const respuesta =
                 await fetch(
@@ -534,9 +524,9 @@ function Mantenimientos() {
             }
 
 
-            // =========================================
+            // =================================================
             // ERROR
-            // =========================================
+            // =================================================
 
             if (!respuesta.ok) {
 
@@ -544,7 +534,6 @@ function Mantenimientos() {
                     "Error creando mantenimiento:",
                     datos
                 );
-
 
                 setMensaje(
                     datos.mensaje ||
@@ -557,18 +546,18 @@ function Mantenimientos() {
             }
 
 
-            // =========================================
+            // =================================================
             // ÉXITO
-            // =========================================
+            // =================================================
 
             setMensaje(
                 "Mantenimiento creado correctamente."
             );
 
 
-            // =========================================
+            // =================================================
             // LIMPIAR FORMULARIO
-            // =========================================
+            // =================================================
 
             setMaquina("");
 
@@ -583,25 +572,23 @@ function Mantenimientos() {
 
             if (inputArchivosRef.current) {
 
-                inputArchivosRef.current.value =
-                    "";
+                inputArchivosRef.current.value = "";
 
             }
 
 
-            // =========================================
+            // =================================================
             // OCULTAR FORMULARIO
-            // =========================================
+            // =================================================
 
             setMostrarFormulario(false);
 
 
-            // =========================================
+            // =================================================
             // ACTUALIZAR HISTORIAL
-            // =========================================
+            // =================================================
 
             await cargarMantenimientos();
-
 
         } catch (error) {
 
@@ -610,10 +597,13 @@ function Mantenimientos() {
                 error
             );
 
-
             setMensaje(
                 "No se pudo conectar con el servidor."
             );
+
+        } finally {
+
+            setGuardando(false);
 
         }
 
@@ -655,7 +645,7 @@ function Mantenimientos() {
 
 
     // =====================================================
-    // ABRIR SELECTOR
+    // ABRIR SELECTOR ARCHIVOS
     // =====================================================
 
     const abrirSelectorArchivos = () => {
@@ -696,8 +686,7 @@ function Mantenimientos() {
 
         if (inputArchivosRef.current) {
 
-            inputArchivosRef.current.value =
-                "";
+            inputArchivosRef.current.value = "";
 
         }
 
@@ -715,7 +704,6 @@ function Mantenimientos() {
             return "Sin fecha";
 
         }
-
 
         return new Date(fecha)
             .toLocaleDateString(
@@ -748,7 +736,6 @@ function Mantenimientos() {
 
         ];
 
-
         return meses[
             Number(numero) - 1
         ] || "Sin mes";
@@ -768,7 +755,6 @@ function Mantenimientos() {
 
         }
 
-
         if (
             ruta.startsWith("http")
         ) {
@@ -777,14 +763,13 @@ function Mantenimientos() {
 
         }
 
-
         return `${API_URL}${ruta}`;
 
     };
 
 
     // =====================================================
-    // MOSTRAR FORMULARIO
+    // ABRIR FORMULARIO
     // =====================================================
 
     const abrirFormulario = () => {
@@ -798,7 +783,6 @@ function Mantenimientos() {
             return;
 
         }
-
 
         setMensaje("");
 
@@ -908,31 +892,303 @@ function Mantenimientos() {
 
             {/* =================================================
                 FORMULARIO
+                IMPORTANTE:
+                El formulario permanece montado.
+                Solo cambia display.
             ================================================= */}
 
-            {mostrarFormulario && esTecnico ? (
+            <div
+                className="formulario-contenedor"
+                style={{
+                    display:
+                        mostrarFormulario && esTecnico
+                            ? "block"
+                            : "none"
+                }}
+            >
 
-                <div className="formulario-contenedor">
+                <div className="formulario-encabezado">
 
-                    <div className="formulario-encabezado">
+                    <div>
 
-                        <div>
+                        <h2>
+                            Nuevo mantenimiento
+                        </h2>
 
-                            <h2>
-                                Nuevo mantenimiento
-                            </h2>
+                        <p>
+                            Registra la información del
+                            mantenimiento realizado.
+                        </p>
 
-                            <p>
-                                Registra la información del
-                                mantenimiento realizado.
-                            </p>
+                    </div>
 
-                        </div>
+
+                    <button
+                        type="button"
+                        className="boton-cancelar"
+                        onClick={cancelarFormulario}
+                    >
+                        Cancelar
+                    </button>
+
+                </div>
+
+
+                <form
+                    onSubmit={crearMantenimiento}
+                    className="formulario-mantenimiento"
+                >
+
+                    {/* =================================================
+                        MÁQUINA
+                    ================================================= */}
+
+                    <div className="campo">
+
+                        <label>
+                            Máquina
+                        </label>
+
+                        <select
+                            value={maquina}
+                            onChange={(e) =>
+                                setMaquina(
+                                    e.target.value
+                                )
+                            }
+                            required
+                        >
+
+                            <option value="">
+                                Seleccione una máquina
+                            </option>
+
+
+                            {maquinas.map(
+                                (maquinaItem) => (
+
+                                    <option
+                                        key={
+                                            maquinaItem._id
+                                        }
+                                        value={
+                                            maquinaItem._id
+                                        }
+                                    >
+
+                                        {maquinaItem.codigo
+                                            ? `${maquinaItem.codigo} - `
+                                            : ""}
+
+                                        {maquinaItem.nombre ||
+                                            "Máquina"}
+
+                                    </option>
+
+                                )
+                            )}
+
+                        </select>
+
+                    </div>
+
+
+                    {/* =================================================
+                        FECHA
+                    ================================================= */}
+
+                    <div className="campo">
+
+                        <label>
+                            Fecha del mantenimiento
+                        </label>
+
+                        <input
+                            type="date"
+                            value={fecha}
+                            onChange={(e) =>
+                                setFecha(
+                                    e.target.value
+                                )
+                            }
+                            required
+                        />
+
+                    </div>
+
+
+                    {/* =================================================
+                        DESCRIPCIÓN
+                    ================================================= */}
+
+                    <div className="campo campo-completo">
+
+                        <label>
+                            Descripción del mantenimiento
+                        </label>
+
+                        <textarea
+                            value={descripcion}
+                            onChange={(e) =>
+                                setDescripcion(
+                                    e.target.value
+                                )
+                            }
+                            placeholder="Describe el trabajo realizado durante el mantenimiento..."
+                            rows="5"
+                        />
+
+                    </div>
+
+
+                    {/* =================================================
+                        EQUIPOS
+                    ================================================= */}
+
+                    <div className="campo campo-completo">
+
+                        <label>
+                            Equipos agregados o utilizados
+                        </label>
+
+                        <textarea
+                            value={
+                                equiposAgregados
+                            }
+                            onChange={(e) =>
+                                setEquiposAgregados(
+                                    e.target.value
+                                )
+                            }
+                            placeholder="Ej: Filtro HEPA, sensor de temperatura, correa, rodamiento..."
+                            rows="4"
+                        />
+
+                    </div>
+
+
+                    {/* =================================================
+                        ARCHIVOS
+                    ================================================= */}
+
+                    <div className="campo campo-completo">
+
+                        <label>
+                            Archivos del mantenimiento
+                        </label>
+
+                        <p className="ayuda">
+                            Puedes agregar varias imágenes,
+                            PDF o archivos de Excel.
+                        </p>
 
 
                         <button
                             type="button"
-                            className="boton-cancelar"
+                            className="boton-archivos"
+                            onClick={
+                                abrirSelectorArchivos
+                            }
+                        >
+                            📎 Agregar archivos
+                        </button>
+
+
+                        <input
+                            ref={
+                                inputArchivosRef
+                            }
+                            type="file"
+                            multiple
+                            accept=".xlsx,.xls,.jpg,.jpeg,.png,.pdf"
+                            onChange={
+                                seleccionarArchivos
+                            }
+                            style={{
+                                display: "none"
+                            }}
+                        />
+
+
+                        {archivos.length > 0 && (
+
+                            <div className="archivos-seleccionados">
+
+                                <div className="archivos-titulo">
+
+                                    <strong>
+                                        Archivos seleccionados
+                                    </strong>
+
+                                    <span>
+                                        {archivos.length}
+                                    </span>
+
+                                </div>
+
+
+                                {archivos.map(
+                                    (
+                                        archivo,
+                                        indice
+                                    ) => (
+
+                                        <div
+                                            className="archivo-item"
+                                            key={
+                                                `${archivo.name}-${archivo.size}-${archivo.lastModified}-${indice}`
+                                            }
+                                        >
+
+                                            <span>
+                                                📄 {archivo.name}
+                                            </span>
+
+
+                                            <button
+                                                type="button"
+                                                className="boton-quitar"
+                                                onClick={() =>
+                                                    quitarArchivo(
+                                                        indice
+                                                    )
+                                                }
+                                            >
+                                                Quitar
+                                            </button>
+
+                                        </div>
+
+                                    )
+                                )}
+
+
+                                <button
+                                    type="button"
+                                    className="boton-quitar-todos"
+                                    onClick={
+                                        limpiarArchivos
+                                    }
+                                >
+                                    Quitar todos
+                                </button>
+
+                            </div>
+
+                        )}
+
+                    </div>
+
+
+                    {/* =================================================
+                        BOTONES
+                    ================================================= */}
+
+                    <div className="acciones-formulario">
+
+                        <button
+                            type="button"
+                            className="boton-secundario"
                             onClick={
                                 cancelarFormulario
                             }
@@ -940,318 +1196,113 @@ function Mantenimientos() {
                             Cancelar
                         </button>
 
+
+                        <button
+                            type="submit"
+                            className="boton-guardar"
+                            disabled={guardando}
+                        >
+
+                            {guardando
+                                ? "Guardando..."
+                                : "Guardar mantenimiento"}
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            {/* =================================================
+                HISTORIAL
+                TAMBIÉN PERMANECE MONTADO
+            ================================================= */}
+
+            <div
+                className="historial"
+                style={{
+                    display:
+                        mostrarFormulario && esTecnico
+                            ? "none"
+                            : "block"
+                }}
+            >
+
+                <div className="historial-encabezado">
+
+                    <div>
+
+                        <h2>
+                            Historial de mantenimientos
+                        </h2>
+
+                        <p>
+                            Consulta los mantenimientos
+                            registrados en el sistema.
+                        </p>
+
                     </div>
 
 
-                    <form
-                        onSubmit={
-                            crearMantenimiento
-                        }
-                        className="formulario-mantenimiento"
-                    >
+                    {/* BOTÓN NUEVO */}
 
-                        {/* =====================================
-                            MÁQUINA
-                        ===================================== */}
+                    {esTecnico && (
 
-                        <div className="campo">
+                        <button
+                            type="button"
+                            className="boton-nuevo"
+                            onClick={
+                                abrirFormulario
+                            }
+                        >
 
-                            <label>
-                                Máquina
-                            </label>
+                            <span>
+                                ＋
+                            </span>
 
-                            <select
-                                value={maquina}
-                                onChange={(e) =>
-                                    setMaquina(
-                                        e.target.value
-                                    )
-                                }
-                                required
-                            >
+                            Nuevo mantenimiento
 
-                                <option value="">
-                                    Seleccione una máquina
-                                </option>
+                        </button>
 
-
-                                {maquinas.map(
-                                    (maquinaItem) => (
-
-                                        <option
-                                            key={
-                                                maquinaItem._id
-                                            }
-                                            value={
-                                                maquinaItem._id
-                                            }
-                                        >
-
-                                            {maquinaItem.codigo
-                                                ? `${maquinaItem.codigo} - `
-                                                : ""}
-
-                                            {maquinaItem.nombre ||
-                                                "Máquina"}
-
-                                        </option>
-
-                                    )
-                                )}
-
-                            </select>
-
-                        </div>
-
-
-                        {/* =====================================
-                            FECHA
-                        ===================================== */}
-
-                        <div className="campo">
-
-                            <label>
-                                Fecha del mantenimiento
-                            </label>
-
-                            <input
-                                type="date"
-                                value={fecha}
-                                onChange={(e) =>
-                                    setFecha(
-                                        e.target.value
-                                    )
-                                }
-                                required
-                            />
-
-                        </div>
-
-
-                        {/* =====================================
-                            DESCRIPCIÓN
-                        ===================================== */}
-
-                        <div className="campo campo-completo">
-
-                            <label>
-                                Descripción del mantenimiento
-                            </label>
-
-                            <textarea
-                                value={descripcion}
-                                onChange={(e) =>
-                                    setDescripcion(
-                                        e.target.value
-                                    )
-                                }
-                                placeholder="Describe el trabajo realizado durante el mantenimiento..."
-                                rows="5"
-                            />
-
-                        </div>
-
-
-                        {/* =====================================
-                            EQUIPOS
-                        ===================================== */}
-
-                        <div className="campo campo-completo">
-
-                            <label>
-                                Equipos agregados o utilizados
-                            </label>
-
-                            <textarea
-                                value={
-                                    equiposAgregados
-                                }
-                                onChange={(e) =>
-                                    setEquiposAgregados(
-                                        e.target.value
-                                    )
-                                }
-                                placeholder="Ej: Filtro HEPA, sensor de temperatura, correa, rodamiento..."
-                                rows="4"
-                            />
-
-                        </div>
-
-
-                        {/* =====================================
-                            ARCHIVOS
-                        ===================================== */}
-
-                        <div className="campo campo-completo">
-
-                            <label>
-                                Archivos del mantenimiento
-                            </label>
-
-                            <p className="ayuda">
-                                Puedes agregar varias imágenes,
-                                PDF o archivos de Excel.
-                            </p>
-
-
-                            <button
-                                type="button"
-                                className="boton-archivos"
-                                onClick={
-                                    abrirSelectorArchivos
-                                }
-                            >
-
-                                📎 Agregar archivos
-
-                            </button>
-
-
-                            <input
-                                ref={
-                                    inputArchivosRef
-                                }
-                                type="file"
-                                multiple
-                                accept=".xlsx,.xls,.jpg,.jpeg,.png,.pdf"
-                                onChange={
-                                    seleccionarArchivos
-                                }
-                                style={{
-                                    display: "none"
-                                }}
-                            />
-
-
-                            {/* ARCHIVOS */}
-
-                            {archivos.length > 0 && (
-
-                                <div className="archivos-seleccionados">
-
-                                    <div className="archivos-titulo">
-
-                                        <strong>
-                                            Archivos seleccionados
-                                        </strong>
-
-                                        <span>
-                                            {archivos.length}
-                                        </span>
-
-                                    </div>
-
-
-                                    {archivos.map(
-                                        (
-                                            archivo,
-                                            indice
-                                        ) => (
-
-                                            <div
-                                                className="archivo-item"
-                                                key={
-                                                    `${archivo.name}-${archivo.size}-${archivo.lastModified}-${indice}`
-                                                }
-                                            >
-
-                                                <span>
-                                                    📄 {archivo.name}
-                                                </span>
-
-
-                                                <button
-                                                    type="button"
-                                                    className="boton-quitar"
-                                                    onClick={() =>
-                                                        quitarArchivo(
-                                                            indice
-                                                        )
-                                                    }
-                                                >
-                                                    Quitar
-                                                </button>
-
-                                            </div>
-
-                                        )
-                                    )}
-
-
-                                    <button
-                                        type="button"
-                                        className="boton-quitar-todos"
-                                        onClick={
-                                            limpiarArchivos
-                                        }
-                                    >
-
-                                        Quitar todos
-
-                                    </button>
-
-                                </div>
-
-                            )}
-
-                        </div>
-
-
-                        {/* =====================================
-                            BOTONES
-                        ===================================== */}
-
-                        <div className="acciones-formulario">
-
-                            <button
-                                type="button"
-                                className="boton-secundario"
-                                onClick={
-                                    cancelarFormulario
-                                }
-                            >
-                                Cancelar
-                            </button>
-
-
-                            <button
-                                type="submit"
-                                className="boton-guardar"
-                            >
-                                Guardar mantenimiento
-                            </button>
-
-                        </div>
-
-                    </form>
+                    )}
 
                 </div>
 
-            ) : (
 
-                /* =================================================
-                   HISTORIAL
-                ================================================= */
+                {/* =================================================
+                    CARGANDO
+                ================================================= */}
 
-                <div className="historial">
+                {cargando ? (
 
-                    <div className="historial-encabezado">
+                    <div className="estado">
 
-                        <div>
+                        <p>
+                            Cargando mantenimientos...
+                        </p>
 
-                            <h2>
-                                Historial de mantenimientos
-                            </h2>
+                    </div>
 
-                            <p>
-                                Consulta los mantenimientos
-                                registrados en el sistema.
-                            </p>
+                ) : mantenimientos.length === 0 ? (
 
+                    <div className="estado">
+
+                        <div className="estado-icono">
+                            📋
                         </div>
 
+                        <h3>
+                            No hay mantenimientos
+                        </h3>
 
-                        {/* BOTÓN NUEVO */}
+                        <p>
+                            Todavía no se han registrado
+                            mantenimientos en el sistema.
+                        </p>
+
 
                         {esTecnico && (
 
@@ -1262,370 +1313,316 @@ function Mantenimientos() {
                                     abrirFormulario
                                 }
                             >
-
-                                <span>
-                                    ＋
-                                </span>
-
-                                Nuevo mantenimiento
-
+                                ＋ Nuevo mantenimiento
                             </button>
 
                         )}
 
                     </div>
 
+                ) : (
 
-                    {/* =================================================
-                        CARGANDO
-                    ================================================= */}
+                    <div className="lista-mantenimientos">
 
-                    {cargando ? (
+                        {mantenimientos.map(
+                            (mantenimiento) => (
 
-                        <div className="estado">
-
-                            <p>
-                                Cargando mantenimientos...
-                            </p>
-
-                        </div>
-
-                    ) : mantenimientos.length === 0 ? (
-
-                        <div className="estado">
-
-                            <div className="estado-icono">
-                                📋
-                            </div>
-
-                            <h3>
-                                No hay mantenimientos
-                            </h3>
-
-                            <p>
-                                Todavía no se han registrado
-                                mantenimientos en el sistema.
-                            </p>
-
-
-                            {esTecnico && (
-
-                                <button
-                                    type="button"
-                                    className="boton-nuevo"
-                                    onClick={
-                                        abrirFormulario
+                                <div
+                                    className="tarjeta-mantenimiento"
+                                    key={
+                                        mantenimiento._id
                                     }
                                 >
 
-                                    ＋ Nuevo mantenimiento
+                                    {/* =================================================
+                                        CABECERA
+                                    ================================================= */}
 
-                                </button>
+                                    <div className="tarjeta-cabecera">
 
-                            )}
+                                        <div>
 
-                        </div>
-
-                    ) : (
-
-                        <div className="lista-mantenimientos">
-
-                            {mantenimientos.map(
-                                (mantenimiento) => (
-
-                                    <div
-                                        className="tarjeta-mantenimiento"
-                                        key={
-                                            mantenimiento._id
-                                        }
-                                    >
-
-                                        {/* CABECERA */}
-
-                                        <div className="tarjeta-cabecera">
-
-                                            <div>
-
-                                                <h3>
-
-                                                    {
-                                                        mantenimiento.maquina?.codigo ||
-                                                        "Sin código"
-                                                    }
-
-                                                </h3>
-
-                                                <p>
-
-                                                    {
-                                                        mantenimiento.maquina?.nombre ||
-                                                        "Máquina no disponible"
-                                                    }
-
-                                                </p>
-
-                                            </div>
-
-
-                                            <div className="fecha-tarjeta">
-
-                                                📅{" "}
-
+                                            <h3>
                                                 {
-                                                    mostrarFecha(
-                                                        mantenimiento.fecha
-                                                    )
+                                                    mantenimiento.maquina?.codigo ||
+                                                    "Sin código"
                                                 }
+                                            </h3>
 
-                                            </div>
+                                            <p>
+                                                {
+                                                    mantenimiento.maquina?.nombre ||
+                                                    "Máquina no disponible"
+                                                }
+                                            </p>
 
                                         </div>
 
 
-                                        {/* INFORMACIÓN */}
-
-                                        <div className="informacion-mantenimiento">
-
-                                            <div className="dato">
-
-                                                <strong>
-                                                    Año
-                                                </strong>
-
-                                                <span>
-                                                    {
-                                                        mantenimiento.anio
-                                                    }
-                                                </span>
-
-                                            </div>
-
-
-                                            <div className="dato">
-
-                                                <strong>
-                                                    Mes
-                                                </strong>
-
-                                                <span>
-                                                    {
-                                                        nombreMes(
-                                                            mantenimiento.mes
-                                                        )
-                                                    }
-                                                </span>
-
-                                            </div>
-
-
-                                            <div className="dato">
-
-                                                <strong>
-                                                    Técnico
-                                                </strong>
-
-                                                <span>
-
-                                                    {
-                                                        mantenimiento.tecnico?.nombre ||
-                                                        "No disponible"
-                                                    }
-
-                                                </span>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        {/* DESCRIPCIÓN */}
-
-                                        {mantenimiento.descripcion && (
-
-                                            <div className="seccion-dato">
-
-                                                <h4>
-                                                    Descripción
-                                                </h4>
-
-                                                <p>
-                                                    {
-                                                        mantenimiento.descripcion
-                                                    }
-                                                </p>
-
-                                            </div>
-
-                                        )}
-
-
-                                        {/* EQUIPOS */}
-
-                                        {mantenimiento.equiposAgregados && (
-
-                                            <div className="seccion-dato">
-
-                                                <h4>
-                                                    Equipos agregados o utilizados
-                                                </h4>
-
-                                                <p>
-                                                    {
-                                                        mantenimiento.equiposAgregados
-                                                    }
-                                                </p>
-
-                                            </div>
-
-                                        )}
-
-
-                                        {/* ARCHIVOS */}
-
-                                        <div className="seccion-archivos">
-
-                                            <h4>
-
-                                                📎 Archivos
-                                                {" ("}
-                                                {
-                                                    mantenimiento.archivos?.length ||
-                                                    0
-                                                }
-                                                {")"}
-
-                                            </h4>
-
-
-                                            {mantenimiento.archivos?.length > 0 ? (
-
-                                                <div className="galeria-archivos">
-
-                                                    {mantenimiento.archivos.map(
-                                                        (
-                                                            archivo,
-                                                            indice
-                                                        ) => {
-
-                                                            const esImagen =
-                                                                archivo.tipo?.startsWith(
-                                                                    "image/"
-                                                                );
-
-
-                                                            const url =
-                                                                obtenerUrlArchivo(
-                                                                    archivo.ruta
-                                                                );
-
-
-                                                            return (
-
-                                                                <div
-                                                                    className="archivo-historial"
-                                                                    key={
-                                                                        archivo._id ||
-                                                                        `${archivo.nombre}-${indice}`
-                                                                    }
-                                                                >
-
-                                                                    {esImagen ? (
-
-                                                                        <>
-
-                                                                            <img
-                                                                                src={
-                                                                                    url
-                                                                                }
-                                                                                alt={
-                                                                                    archivo.nombre
-                                                                                }
-                                                                            />
-
-
-                                                                            <p className="nombre-archivo">
-                                                                                {
-                                                                                    archivo.nombre
-                                                                                }
-                                                                            </p>
-
-
-                                                                            <a
-                                                                                href={
-                                                                                    url
-                                                                                }
-                                                                                target="_blank"
-                                                                                rel="noreferrer"
-                                                                                className="enlace-archivo"
-                                                                            >
-                                                                                Ver imagen
-                                                                            </a>
-
-                                                                        </>
-
-                                                                    ) : (
-
-                                                                        <>
-
-                                                                            <div className="icono-archivo">
-                                                                                📄
-                                                                            </div>
-
-
-                                                                            <p className="nombre-archivo">
-                                                                                {
-                                                                                    archivo.nombre
-                                                                                }
-                                                                            </p>
-
-
-                                                                            <a
-                                                                                href={
-                                                                                    url
-                                                                                }
-                                                                                target="_blank"
-                                                                                rel="noreferrer"
-                                                                                download
-                                                                                className="enlace-archivo"
-                                                                            >
-                                                                                Descargar
-                                                                            </a>
-
-                                                                        </>
-
-                                                                    )}
-
-                                                                </div>
-
-                                                            );
-
-                                                        }
-                                                    )}
-
-                                                </div>
-
-                                            ) : (
-
-                                                <p className="sin-archivos">
-                                                    No hay archivos adjuntos.
-                                                </p>
-
-                                            )}
+                                        <div className="fecha-tarjeta">
+
+                                            📅{" "}
+
+                                            {
+                                                mostrarFecha(
+                                                    mantenimiento.fecha
+                                                )
+                                            }
 
                                         </div>
 
                                     </div>
 
-                                )
-                            )}
 
-                        </div>
+                                    {/* =================================================
+                                        INFORMACIÓN
+                                    ================================================= */}
 
-                    )}
+                                    <div className="informacion-mantenimiento">
 
-                </div>
+                                        <div className="dato">
 
-            )}
+                                            <strong>
+                                                Año
+                                            </strong>
+
+                                            <span>
+                                                {
+                                                    mantenimiento.anio
+                                                }
+                                            </span>
+
+                                        </div>
+
+
+                                        <div className="dato">
+
+                                            <strong>
+                                                Mes
+                                            </strong>
+
+                                            <span>
+                                                {
+                                                    nombreMes(
+                                                        mantenimiento.mes
+                                                    )
+                                                }
+                                            </span>
+
+                                        </div>
+
+
+                                        <div className="dato">
+
+                                            <strong>
+                                                Técnico
+                                            </strong>
+
+                                            <span>
+                                                {
+                                                    mantenimiento.tecnico?.nombre ||
+                                                    "No disponible"
+                                                }
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {/* =================================================
+                                        DESCRIPCIÓN
+                                    ================================================= */}
+
+                                    {mantenimiento.descripcion && (
+
+                                        <div className="seccion-dato">
+
+                                            <h4>
+                                                Descripción
+                                            </h4>
+
+                                            <p>
+                                                {
+                                                    mantenimiento.descripcion
+                                                }
+                                            </p>
+
+                                        </div>
+
+                                    )}
+
+
+                                    {/* =================================================
+                                        EQUIPOS
+                                    ================================================= */}
+
+                                    {mantenimiento.equiposAgregados && (
+
+                                        <div className="seccion-dato">
+
+                                            <h4>
+                                                Equipos agregados o utilizados
+                                            </h4>
+
+                                            <p>
+                                                {
+                                                    mantenimiento.equiposAgregados
+                                                }
+                                            </p>
+
+                                        </div>
+
+                                    )}
+
+
+                                    {/* =================================================
+                                        ARCHIVOS
+                                    ================================================= */}
+
+                                    <div className="seccion-archivos">
+
+                                        <h4>
+
+                                            📎 Archivos
+                                            {" ("}
+                                            {
+                                                mantenimiento.archivos?.length ||
+                                                0
+                                            }
+                                            {")"}
+
+                                        </h4>
+
+
+                                        {mantenimiento.archivos?.length > 0 ? (
+
+                                            <div className="galeria-archivos">
+
+                                                {mantenimiento.archivos.map(
+                                                    (
+                                                        archivo,
+                                                        indice
+                                                    ) => {
+
+                                                        const esImagen =
+                                                            archivo.tipo?.startsWith(
+                                                                "image/"
+                                                            );
+
+
+                                                        const url =
+                                                            obtenerUrlArchivo(
+                                                                archivo.ruta
+                                                            );
+
+
+                                                        return (
+
+                                                            <div
+                                                                className="archivo-historial"
+                                                                key={
+                                                                    archivo._id ||
+                                                                    `${archivo.nombre}-${indice}`
+                                                                }
+                                                            >
+
+                                                                {esImagen ? (
+
+                                                                    <>
+
+                                                                        <img
+                                                                            src={
+                                                                                url
+                                                                            }
+                                                                            alt={
+                                                                                archivo.nombre ||
+                                                                                "Archivo"
+                                                                            }
+                                                                        />
+
+
+                                                                        <p className="nombre-archivo">
+                                                                            {
+                                                                                archivo.nombre
+                                                                            }
+                                                                        </p>
+
+
+                                                                        <a
+                                                                            href={
+                                                                                url
+                                                                            }
+                                                                            target="_blank"
+                                                                            rel="noreferrer"
+                                                                            className="enlace-archivo"
+                                                                        >
+                                                                            Ver imagen
+                                                                        </a>
+
+                                                                    </>
+
+                                                                ) : (
+
+                                                                    <>
+
+                                                                        <div className="icono-archivo">
+                                                                            📄
+                                                                        </div>
+
+
+                                                                        <p className="nombre-archivo">
+                                                                            {
+                                                                                archivo.nombre
+                                                                            }
+                                                                        </p>
+
+
+                                                                        <a
+                                                                            href={
+                                                                                url
+                                                                            }
+                                                                            target="_blank"
+                                                                            rel="noreferrer"
+                                                                            download
+                                                                            className="enlace-archivo"
+                                                                        >
+                                                                            Descargar
+                                                                        </a>
+
+                                                                    </>
+
+                                                                )}
+
+                                                            </div>
+
+                                                        );
+
+                                                    }
+                                                )}
+
+                                            </div>
+
+                                        ) : (
+
+                                            <p className="sin-archivos">
+                                                No hay archivos adjuntos.
+                                            </p>
+
+                                        )}
+
+                                    </div>
+
+                                </div>
+
+                            )
+                        )}
+
+                    </div>
+
+                )}
+
+            </div>
 
 
             {/* =================================================
@@ -2166,6 +2163,11 @@ function Mantenimientos() {
 
                 .boton-guardar:hover {
                     background: #ea580c;
+                }
+
+                .boton-guardar:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
                 }
 
                 .boton-secundario,
