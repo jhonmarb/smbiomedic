@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+
 import {
     User,
     Lock,
@@ -11,34 +12,41 @@ import {
     LogIn
 } from "lucide-react";
 
+
 function Login() {
 
     const navigate = useNavigate();
 
+
+    // =====================================================
+    // ESTADOS
+    // =====================================================
+
     const [usuario, setUsuario] = useState("");
+
     const [password, setPassword] = useState("");
 
-    const [mostrarPassword, setMostrarPassword] =
-        useState(false);
+    const [mostrarPassword, setMostrarPassword] = useState(false);
 
-    const [recordar, setRecordar] =
-        useState(false);
+    const [recordar, setRecordar] = useState(false);
 
-    const [cargando, setCargando] =
-        useState(false);
+    const [cargando, setCargando] = useState(false);
 
-    const [error, setError] =
-        useState("");
+    const [error, setError] = useState("");
 
-    // ==========================================
+
+    // =====================================================
     // INICIAR SESIÓN
-    // ==========================================
+    // =====================================================
 
     const iniciarSesion = async (e) => {
 
         e.preventDefault();
 
         setError("");
+
+
+        // Validar campos
 
         if (!usuario || !password) {
 
@@ -49,13 +57,15 @@ function Login() {
             return;
         }
 
+
         try {
 
             setCargando(true);
 
-            // ==========================================
-            // CONEXIÓN CON BACKEND DE RENDER
-            // ==========================================
+
+            // =================================================
+            // PETICIÓN AL BACKEND
+            // =================================================
 
             const respuesta = await fetch(
                 "https://smbiomedic.onrender.com/api/auth/login",
@@ -73,11 +83,13 @@ function Login() {
                 }
             );
 
+
             const datos = await respuesta.json();
 
-            // ==========================================
-            // VALIDAR RESPUESTA
-            // ==========================================
+
+            // =================================================
+            // ERROR DEL SERVIDOR
+            // =================================================
 
             if (!respuesta.ok) {
 
@@ -88,9 +100,10 @@ function Login() {
 
             }
 
-            // ==========================================
+
+            // =================================================
             // GUARDAR TOKEN
-            // ==========================================
+            // =================================================
 
             if (datos.token) {
 
@@ -101,35 +114,53 @@ function Login() {
 
             }
 
-            // ==========================================
-            // GUARDAR INFORMACIÓN DEL USUARIO
-            // ==========================================
+
+            // =================================================
+            // GUARDAR USUARIO
+            // =================================================
 
             if (datos.usuario) {
 
                 localStorage.setItem(
                     "usuario",
-                    JSON.stringify(
-                        datos.usuario
-                    )
+                    JSON.stringify(datos.usuario)
                 );
 
             }
 
-            // ==========================================
-            // GUARDAR RECORDAR SESIÓN
-            // ==========================================
+
+            // =================================================
+            // RECORDAR SESIÓN
+            // =================================================
 
             localStorage.setItem(
                 "recordarSesion",
                 recordar ? "true" : "false"
             );
 
-            // ==========================================
-            // IR AL DASHBOARD
-            // ==========================================
 
-            navigate("/dashboard");
+            // =================================================
+            // AVISAR A APP.JSX
+            // =================================================
+            // Esto permite que App.jsx detecte inmediatamente
+            // que acabamos de iniciar sesión.
+
+            window.dispatchEvent(
+                new Event("authChanged")
+            );
+
+
+            // =================================================
+            // IR AL DASHBOARD
+            // =================================================
+
+            navigate(
+                "/dashboard",
+                {
+                    replace: true
+                }
+            );
+
 
         } catch (error) {
 
@@ -138,10 +169,12 @@ function Login() {
                 error
             );
 
+
             setError(
                 error.message ||
                 "No se pudo iniciar sesión."
             );
+
 
         } finally {
 
@@ -151,701 +184,442 @@ function Login() {
 
     };
 
+
+    // =====================================================
+    // INTERFAZ
+    // =====================================================
+
     return (
 
-        <div className="
-            min-h-screen
-            bg-white
-            relative
-            overflow-hidden
-            flex
-            flex-col
-        ">
+        <div className="min-h-screen bg-slate-100 flex">
 
-            {/* ==========================================
-                FONDO CON SÍMBOLOS MÉDICOS
-            ========================================== */}
 
-            <div className="
-                absolute
-                inset-0
-                pointer-events-none
-                overflow-hidden
-                select-none
-            ">
+            {/* =================================================
+                PANEL IZQUIERDO
+            ================================================= */}
 
-                <div className="
-                    absolute
-                    inset-0
-                    grid
-                    grid-cols-7
-                    gap-y-16
-                    opacity-[0.12]
-                    text-orange-400
-                    text-5xl
-                    font-bold
-                ">
+            <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative overflow-hidden">
 
-                    {Array.from(
-                        { length: 70 },
-                        (_, indice) => (
 
-                            <div
-                                key={indice}
-                                className="
-                                    flex
-                                    items-center
-                                    justify-center
-                                "
-                            >
-                                ⚕
+                {/* Fondo médico */}
+
+                <div className="absolute inset-0 opacity-10">
+
+                    <div className="absolute text-[300px] font-bold text-orange-500 -top-20 -left-20">
+                        ⚕
+                    </div>
+
+                    <div className="absolute text-[250px] font-bold text-orange-500 bottom-0 right-0">
+                        ⚕
+                    </div>
+
+                </div>
+
+
+                <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+
+
+                    {/* Logo */}
+
+                    <div className="mb-10">
+
+                        <img
+                            src="/logo-biomedic.png"
+                            alt="Biomedic Projects"
+                            className="w-72 h-auto object-contain"
+                            onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                            }}
+                        />
+
+                    </div>
+
+
+                    <h1 className="text-5xl font-bold mb-6">
+
+                        Biomedic
+                        <span className="text-orange-500">
+                            Projects
+                        </span>
+
+                    </h1>
+
+
+                    <p className="text-xl text-slate-300 max-w-xl leading-relaxed">
+
+                        Sistema de gestión y control para el
+                        mantenimiento de equipos biomédicos.
+
+                    </p>
+
+
+                    {/* Características */}
+
+                    <div className="mt-10 space-y-5">
+
+
+                        <div className="flex items-center gap-4">
+
+                            <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+
+                                <Wrench
+                                    className="text-orange-500"
+                                    size={24}
+                                />
+
                             </div>
 
-                        )
-                    )}
+                            <div>
+
+                                <h3 className="font-semibold">
+                                    Gestión de mantenimientos
+                                </h3>
+
+                                <p className="text-sm text-slate-400">
+                                    Control organizado de equipos
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div className="flex items-center gap-4">
+
+                            <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+
+                                <BarChart3
+                                    className="text-orange-500"
+                                    size={24}
+                                />
+
+                            </div>
+
+                            <div>
+
+                                <h3 className="font-semibold">
+                                    Seguimiento
+                                </h3>
+
+                                <p className="text-sm text-slate-400">
+                                    Información centralizada y organizada
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div className="flex items-center gap-4">
+
+                            <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+
+                                <ShieldCheck
+                                    className="text-orange-500"
+                                    size={24}
+                                />
+
+                            </div>
+
+                            <div>
+
+                                <h3 className="font-semibold">
+                                    Seguridad
+                                </h3>
+
+                                <p className="text-sm text-slate-400">
+                                    Acceso según el rol del usuario
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
 
                 </div>
 
             </div>
 
-            {/* ==========================================
-                CONTENIDO PRINCIPAL
-            ========================================== */}
 
-            <div className="
-                relative
-                z-10
-                flex-1
-                flex
-                items-center
-                justify-center
-                px-4
-                py-10
-            ">
+            {/* =================================================
+                PANEL DERECHO
+            ================================================= */}
 
-                {/* ======================================
-                    TARJETA PRINCIPAL
-                ====================================== */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
 
-                <div className="
-                    w-full
-                    max-w-5xl
-                    bg-white
-                    rounded-3xl
-                    shadow-2xl
-                    overflow-hidden
-                    border
-                    border-gray-100
-                    flex
-                    flex-col
-                    md:flex-row
-                ">
 
-                    {/* ==================================
-                        PARTE IZQUIERDA
-                    ================================== */}
+                <div className="w-full max-w-md">
 
-                    <div className="
-                        w-full
-                        md:w-3/5
-                        p-8
-                        md:p-12
-                    ">
 
-                        {/* LOGO */}
+                    {/* Logo móvil */}
 
-                        <div className="
-                            flex
-                            justify-center
-                            mb-5
-                        ">
+                    <div className="lg:hidden flex justify-center mb-8">
 
-                            <img
-                                src="/logo-biomedic.png"
-                                alt="Biomedic Projects"
-                                className="
-                                    w-64
-                                    h-auto
-                                    max-h-32
-                                    object-contain
-                                "
-                                onError={(e) => {
-                                    e.currentTarget.style.display =
-                                        "none";
-                                }}
+                        <img
+                            src="/logo-biomedic.png"
+                            alt="Biomedic Projects"
+                            className="w-56 h-auto object-contain"
+                            onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                            }}
+                        />
+
+                    </div>
+
+
+                    {/* Encabezado */}
+
+                    <div className="text-center mb-8">
+
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange-500 mb-5 shadow-lg">
+
+                            <ShieldCheck
+                                size={32}
+                                className="text-white"
                             />
 
                         </div>
 
-                        {/* TÍTULO */}
 
-                        <div className="
-                            text-center
-                            mb-8
-                        ">
+                        <h2 className="text-3xl font-bold text-slate-800">
 
-                            <h1 className="
-                                text-3xl
-                                md:text-4xl
-                                font-bold
-                                text-orange-600
-                                mb-2
-                            ">
-                                Iniciar sesión
-                            </h1>
+                            Bienvenido
 
-                            <p className="
-                                text-gray-500
-                                text-base
-                            ">
-                                Sistema de Mantenimiento Hospitalario
-                            </p>
+                        </h2>
+
+
+                        <p className="text-slate-500 mt-2">
+
+                            Ingresa a Biomedic Projects
+
+                        </p>
+
+                    </div>
+
+
+                    {/* =================================================
+                        FORMULARIO
+                    ================================================= */}
+
+                    <form
+                        onSubmit={iniciarSesion}
+                        className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200"
+                    >
+
+
+                        {/* Usuario */}
+
+                        <div className="mb-5">
+
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                                Usuario
+
+                            </label>
+
+
+                            <div className="relative">
+
+                                <User
+                                    size={20}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                                />
+
+
+                                <input
+                                    type="text"
+                                    value={usuario}
+                                    onChange={(e) =>
+                                        setUsuario(e.target.value)
+                                    }
+                                    placeholder="Ingresa tu usuario"
+                                    autoComplete="username"
+                                    className="w-full pl-12 pr-4 py-3.5 border border-slate-300 rounded-xl outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                                />
+
+                            </div>
 
                         </div>
 
-                        {/* ERROR */}
 
-                        {error && (
+                        {/* Contraseña */}
 
-                            <div className="
-                                mb-5
-                                p-3
-                                rounded-lg
-                                bg-red-50
-                                border
-                                border-red-200
-                                text-red-600
-                                text-sm
-                            ">
-                                {error}
-                            </div>
+                        <div className="mb-5">
 
-                        )}
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">
 
-                        {/* ==================================
-                            FORMULARIO
-                        ================================== */}
+                                Contraseña
 
-                        <form
-                            onSubmit={iniciarSesion}
-                            className="space-y-6"
-                        >
+                            </label>
 
-                            {/* USUARIO */}
 
-                            <div>
+                            <div className="relative">
 
-                                <label className="
-                                    block
-                                    text-sm
-                                    font-semibold
-                                    text-gray-800
-                                    mb-2
-                                ">
-                                    Usuario
-                                </label>
+                                <Lock
+                                    size={20}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                                />
 
-                                <div className="
-                                    relative
-                                ">
 
-                                    <User
-                                        size={21}
-                                        className="
-                                            absolute
-                                            left-4
-                                            top-1/2
-                                            -translate-y-1/2
-                                            text-orange-500
-                                        "
-                                    />
+                                <input
+                                    type={
+                                        mostrarPassword
+                                            ? "text"
+                                            : "password"
+                                    }
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    placeholder="Ingresa tu contraseña"
+                                    autoComplete="current-password"
+                                    className="w-full pl-12 pr-12 py-3.5 border border-slate-300 rounded-xl outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                                />
 
-                                    <input
-                                        type="text"
-                                        value={usuario}
-                                        onChange={(e) =>
-                                            setUsuario(
-                                                e.target.value
-                                            )
-                                        }
-                                        placeholder="Ingresa tu usuario"
-                                        autoComplete="username"
-                                        className="
-                                            w-full
-                                            h-14
-                                            pl-12
-                                            pr-4
-                                            border
-                                            border-gray-300
-                                            rounded-xl
-                                            outline-none
-                                            text-gray-800
-                                            placeholder-gray-400
-                                            focus:border-orange-500
-                                            focus:ring-2
-                                            focus:ring-orange-100
-                                            transition
-                                        "
-                                    />
-
-                                </div>
-
-                            </div>
-
-                            {/* CONTRASEÑA */}
-
-                            <div>
-
-                                <label className="
-                                    block
-                                    text-sm
-                                    font-semibold
-                                    text-gray-800
-                                    mb-2
-                                ">
-                                    Contraseña
-                                </label>
-
-                                <div className="
-                                    relative
-                                ">
-
-                                    <Lock
-                                        size={21}
-                                        className="
-                                            absolute
-                                            left-4
-                                            top-1/2
-                                            -translate-y-1/2
-                                            text-orange-500
-                                        "
-                                    />
-
-                                    <input
-                                        type={
-                                            mostrarPassword
-                                                ? "text"
-                                                : "password"
-                                        }
-                                        value={password}
-                                        onChange={(e) =>
-                                            setPassword(
-                                                e.target.value
-                                            )
-                                        }
-                                        placeholder="Ingresa tu contraseña"
-                                        autoComplete="current-password"
-                                        className="
-                                            w-full
-                                            h-14
-                                            pl-12
-                                            pr-12
-                                            border
-                                            border-gray-300
-                                            rounded-xl
-                                            outline-none
-                                            text-gray-800
-                                            placeholder-gray-400
-                                            focus:border-orange-500
-                                            focus:ring-2
-                                            focus:ring-orange-100
-                                            transition
-                                        "
-                                    />
-
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setMostrarPassword(
-                                                !mostrarPassword
-                                            )
-                                        }
-                                        className="
-                                            absolute
-                                            right-4
-                                            top-1/2
-                                            -translate-y-1/2
-                                            text-gray-500
-                                            hover:text-orange-500
-                                            transition
-                                        "
-                                    >
-
-                                        {mostrarPassword ? (
-
-                                            <EyeOff size={20} />
-
-                                        ) : (
-
-                                            <Eye size={20} />
-
-                                        )}
-
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                            {/* RECORDAR / OLVIDÓ */}
-
-                            <div className="
-                                flex
-                                flex-col
-                                sm:flex-row
-                                items-start
-                                sm:items-center
-                                justify-between
-                                gap-3
-                            ">
-
-                                <label className="
-                                    flex
-                                    items-center
-                                    gap-2
-                                    cursor-pointer
-                                    text-sm
-                                    text-gray-600
-                                ">
-
-                                    <input
-                                        type="checkbox"
-                                        checked={recordar}
-                                        onChange={(e) =>
-                                            setRecordar(
-                                                e.target.checked
-                                            )
-                                        }
-                                        className="
-                                            w-5
-                                            h-5
-                                            accent-orange-500
-                                        "
-                                    />
-
-                                    Recordar sesión
-
-                                </label>
 
                                 <button
                                     type="button"
                                     onClick={() =>
-                                        alert(
-                                            "Comunícate con el administrador para recuperar tu contraseña."
+                                        setMostrarPassword(
+                                            !mostrarPassword
                                         )
                                     }
-                                    className="
-                                        text-sm
-                                        text-orange-600
-                                        hover:text-orange-700
-                                        font-medium
-                                    "
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-500 transition"
                                 >
-                                    ¿Olvidaste tu contraseña?
+
+                                    {mostrarPassword ? (
+
+                                        <EyeOff size={20} />
+
+                                    ) : (
+
+                                        <Eye size={20} />
+
+                                    )}
+
                                 </button>
 
                             </div>
 
-                            {/* BOTÓN */}
+                        </div>
 
-                            <button
-                                type="submit"
-                                disabled={cargando}
-                                className="
-                                    w-full
-                                    h-14
-                                    bg-orange-600
-                                    hover:bg-orange-700
-                                    disabled:bg-orange-300
-                                    text-white
-                                    rounded-xl
-                                    font-semibold
-                                    text-lg
-                                    flex
-                                    items-center
-                                    justify-center
-                                    gap-3
-                                    shadow-lg
-                                    shadow-orange-200
-                                    transition
-                                "
+
+                        {/* Recordar sesión */}
+
+                        <div className="flex items-center mb-6">
+
+                            <input
+                                id="recordar"
+                                type="checkbox"
+                                checked={recordar}
+                                onChange={(e) =>
+                                    setRecordar(
+                                        e.target.checked
+                                    )
+                                }
+                                className="w-4 h-4 accent-orange-500"
+                            />
+
+
+                            <label
+                                htmlFor="recordar"
+                                className="ml-2 text-sm text-slate-600 cursor-pointer"
                             >
-
-                                {cargando ? (
-
-                                    <>
-
-                                        <span className="
-                                            w-5
-                                            h-5
-                                            border-2
-                                            border-white
-                                            border-t-transparent
-                                            rounded-full
-                                            animate-spin
-                                        " />
-
-                                        Iniciando...
-
-                                    </>
-
-                                ) : (
-
-                                    <>
-
-                                        <LogIn size={21} />
-
-                                        Iniciar sesión
-
-                                    </>
-
-                                )}
-
-                            </button>
-
-                        </form>
-
-                        {/* REGISTRO */}
-
-                        <div className="
-                            text-center
-                            mt-7
-                            text-gray-600
-                        ">
-
-                            ¿No tienes una cuenta?
-
-                            <Link
-                                to="/registro"
-                                className="
-                                    ml-1
-                                    text-orange-600
-                                    font-semibold
-                                    hover:text-orange-700
-                                "
-                            >
-                                Regístrate aquí
-                            </Link>
+                                Recordar sesión
+                            </label>
 
                         </div>
 
-                    </div>
 
-                    {/* ==================================
-                        PARTE DERECHA
-                    ================================== */}
+                        {/* =================================================
+                            ERROR
+                        ================================================= */}
 
-                    <div className="
-                        w-full
-                        md:w-2/5
-                        bg-orange-50
-                        p-8
-                        md:p-10
-                        flex
-                        flex-col
-                        items-center
-                        justify-center
-                        border-t
-                        md:border-t-0
-                        md:border-l
-                        border-orange-100
-                    ">
+                        {error && (
 
-                        {/* SÍMBOLO MÉDICO */}
+                            <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
 
-                        <div className="
-                            text-orange-600
-                            text-8xl
-                            mb-4
-                            leading-none
-                        ">
-                            ⚕
-                        </div>
-
-                        <h2 className="
-                            text-2xl
-                            font-bold
-                            text-orange-600
-                            text-center
-                            mb-3
-                        ">
-                            Gestión eficiente
-                        </h2>
-
-                        <p className="
-                            text-gray-700
-                            text-center
-                            leading-relaxed
-                            max-w-sm
-                            mb-8
-                        ">
-                            Administra mantenimientos,
-                            intervenciones y equipos
-                            hospitalarios de forma simple
-                            y segura.
-                        </p>
-
-                        {/* ==================================
-                            CARACTERÍSTICAS
-                        ================================== */}
-
-                        <div className="
-                            w-full
-                            space-y-4
-                        ">
-
-                            {/* DATOS SEGUROS */}
-
-                            <div className="
-                                flex
-                                items-center
-                                gap-4
-                                bg-white
-                                rounded-xl
-                                p-3
-                                shadow-sm
-                                border
-                                border-orange-100
-                            ">
-
-                                <div className="
-                                    w-12
-                                    h-12
-                                    rounded-lg
-                                    bg-orange-50
-                                    flex
-                                    items-center
-                                    justify-center
-                                    text-orange-600
-                                ">
-
-                                    <ShieldCheck size={25} />
-
-                                </div>
-
-                                <span className="
-                                    text-gray-700
-                                    font-medium
-                                ">
-                                    Datos seguros
-                                </span>
+                                {error}
 
                             </div>
 
-                            {/* REPORTES */}
+                        )}
 
-                            <div className="
-                                flex
-                                items-center
-                                gap-4
-                                bg-white
-                                rounded-xl
-                                p-3
-                                shadow-sm
-                                border
-                                border-orange-100
-                            ">
 
-                                <div className="
-                                    w-12
-                                    h-12
-                                    rounded-lg
-                                    bg-orange-50
-                                    flex
-                                    items-center
-                                    justify-center
-                                    text-orange-600
-                                ">
+                        {/* =================================================
+                            BOTÓN LOGIN
+                        ================================================= */}
 
-                                    <BarChart3 size={25} />
+                        <button
+                            type="submit"
+                            disabled={cargando}
+                            className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3.5 rounded-xl transition shadow-md"
+                        >
 
-                                </div>
+                            {cargando ? (
 
-                                <span className="
-                                    text-gray-700
-                                    font-medium
-                                ">
-                                    Reportes en tiempo real
-                                </span>
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 
-                            </div>
+                                    Iniciando sesión...
+                                </>
 
-                            {/* EQUIPOS */}
+                            ) : (
 
-                            <div className="
-                                flex
-                                items-center
-                                gap-4
-                                bg-white
-                                rounded-xl
-                                p-3
-                                shadow-sm
-                                border
-                                border-orange-100
-                            ">
+                                <>
+                                    <LogIn size={20} />
 
-                                <div className="
-                                    w-12
-                                    h-12
-                                    rounded-lg
-                                    bg-orange-50
-                                    flex
-                                    items-center
-                                    justify-center
-                                    text-orange-600
-                                ">
+                                    Iniciar sesión
+                                </>
 
-                                    <Wrench size={25} />
+                            )}
 
-                                </div>
+                        </button>
 
-                                <span className="
-                                    text-gray-700
-                                    font-medium
-                                ">
-                                    Gestión de equipos
-                                </span>
 
-                            </div>
+                        {/* Registro */}
+
+                        <div className="text-center mt-6">
+
+                            <p className="text-sm text-slate-500">
+
+                                ¿No tienes una cuenta?
+
+                                <Link
+                                    to="/registro"
+                                    className="ml-1 text-orange-500 font-semibold hover:text-orange-600"
+                                >
+                                    Crear cuenta
+                                </Link>
+
+                            </p>
 
                         </div>
 
-                    </div>
+
+                    </form>
+
+
+                    {/* Pie */}
+
+                    <p className="text-center text-xs text-slate-400 mt-6">
+
+                        © 2026 Biomedic Projects
+
+                    </p>
+
 
                 </div>
 
             </div>
-
-            {/* ==========================================
-                PIE DE PÁGINA
-            ========================================== */}
-
-            <footer className="
-                relative
-                z-10
-                text-center
-                pb-6
-                text-sm
-                text-gray-500
-            ">
-
-                © 2026{" "}
-
-                <span className="
-                    text-orange-600
-                    font-medium
-                ">
-                    Biomedic Projects
-                </span>
-
-                . Todos los derechos reservados.
-
-            </footer>
 
         </div>
 
     );
 
 }
+
 
 export default Login;

@@ -6,6 +6,8 @@ import {
     useLocation
 } from "react-router-dom";
 
+import { useEffect, useState } from "react";
+
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import Dashboard from "./pages/Dashboard";
@@ -18,14 +20,12 @@ import Layout from "./components/Layout";
 
 
 // =====================================================
-// PROTEGER LAS RUTAS
+// RUTA PROTEGIDA
 // =====================================================
 
-function RutaProtegida() {
+function RutaProtegida({ token }) {
 
     const location = useLocation();
-
-    const token = localStorage.getItem("token");
 
     if (!token) {
         return (
@@ -48,6 +48,52 @@ function RutaProtegida() {
 // =====================================================
 
 function App() {
+
+    // =====================================================
+    // ESTADO DE AUTENTICACIÓN
+    // =====================================================
+
+    const [token, setToken] = useState(
+        () => localStorage.getItem("token")
+    );
+
+
+    // =====================================================
+    // ESCUCHAR CAMBIOS DE SESIÓN
+    // =====================================================
+
+    useEffect(() => {
+
+        const revisarSesion = () => {
+
+            const tokenActual = localStorage.getItem("token");
+
+            setToken(tokenActual);
+
+        };
+
+
+        window.addEventListener(
+            "authChanged",
+            revisarSesion
+        );
+
+
+        return () => {
+
+            window.removeEventListener(
+                "authChanged",
+                revisarSesion
+            );
+
+        };
+
+    }, []);
+
+
+    // =====================================================
+    // APP
+    // =====================================================
 
     return (
 
@@ -80,7 +126,9 @@ function App() {
                 ===================================== */}
 
                 <Route
-                    element={<RutaProtegida />}
+                    element={
+                        <RutaProtegida token={token} />
+                    }
                 >
 
                     <Route
@@ -118,7 +166,7 @@ function App() {
                 <Route
                     path="/"
                     element={
-                        localStorage.getItem("token")
+                        token
                             ? (
                                 <Navigate
                                     to="/dashboard"
@@ -142,7 +190,7 @@ function App() {
                 <Route
                     path="*"
                     element={
-                        localStorage.getItem("token")
+                        token
                             ? (
                                 <Navigate
                                     to="/dashboard"
