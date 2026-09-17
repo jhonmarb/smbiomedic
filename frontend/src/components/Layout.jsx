@@ -65,13 +65,25 @@ function Layout() {
 
     const cerrarSesion = () => {
 
+        // Eliminar información de sesión
         localStorage.removeItem("token");
-
         localStorage.removeItem("usuario");
+        localStorage.removeItem("recordarSesion");
 
-        navigate("/login", {
-            replace: true
-        });
+
+        // Avisar a App.jsx inmediatamente
+        window.dispatchEvent(
+            new Event("authChanged")
+        );
+
+
+        // Regresar al Login
+        navigate(
+            "/login",
+            {
+                replace: true
+            }
+        );
 
     };
 
@@ -796,7 +808,7 @@ function Layout() {
 
 
                     {/* ==================================
-                        CONTENIDO DE CADA PÁGINA
+                        CONTENIDO
                     ================================== */}
 
                     <section
