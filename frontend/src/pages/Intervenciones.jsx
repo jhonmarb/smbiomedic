@@ -5,12 +5,16 @@ import {
 } from "react";
 
 // =====================================================
-// URL DEL BACKEND
+// URL DEL BACKEND EN RENDER
 // =====================================================
 
 const API_URL = "https://smbiomedic.onrender.com";
 
-function Intervenciones() {
+// =====================================================
+// COMPONENTE
+// =====================================================
+
+export default function Intervenciones() {
 
     // =====================================================
     // ESTADOS
@@ -18,7 +22,10 @@ function Intervenciones() {
 
     const [intervenciones, setIntervenciones] = useState([]);
     const [maquinas, setMaquinas] = useState([]);
+
     const [cargando, setCargando] = useState(true);
+    const [guardando, setGuardando] = useState(false);
+
     const [mensaje, setMensaje] = useState("");
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
@@ -27,8 +34,6 @@ function Intervenciones() {
     const [descripcion, setDescripcion] = useState("");
     const [equiposAgregados, setEquiposAgregados] = useState("");
     const [archivos, setArchivos] = useState([]);
-
-    const [guardando, setGuardando] = useState(false);
 
     // =====================================================
     // REFERENCIA ARCHIVOS
@@ -40,20 +45,34 @@ function Intervenciones() {
     // USUARIO
     // =====================================================
 
-    const usuarioGuardado = localStorage.getItem("usuario");
+    const obtenerUsuario = () => {
 
-    let usuario = null;
+        const usuarioGuardado =
+            localStorage.getItem("usuario");
 
-    try {
-        usuario = usuarioGuardado
-            ? JSON.parse(usuarioGuardado)
-            : null;
-    } catch (error) {
-        console.error("Error leyendo usuario:", error);
-        usuario = null;
-    }
+        if (!usuarioGuardado) {
+            return null;
+        }
 
-    const token = localStorage.getItem("token");
+        try {
+
+            return JSON.parse(usuarioGuardado);
+
+        } catch (error) {
+
+            console.error(
+                "Error leyendo usuario:",
+                error
+            );
+
+            return null;
+        }
+    };
+
+    const usuario = obtenerUsuario();
+
+    const token =
+        localStorage.getItem("token");
 
     // =====================================================
     // NORMALIZAR ROL
@@ -67,11 +86,27 @@ function Intervenciones() {
             .trim()
         : "";
 
-    const esTecnico = rolUsuario === "tecnico";
+    const esTecnico =
+        rolUsuario === "tecnico";
 
-    console.log("Usuario:", usuario);
-    console.log("Rol detectado:", rolUsuario);
-    console.log("¿Es técnico?:", esTecnico);
+    // =====================================================
+    // DEBUG
+    // =====================================================
+
+    console.log(
+        "Usuario intervenciones:",
+        usuario
+    );
+
+    console.log(
+        "Rol detectado:",
+        rolUsuario
+    );
+
+    console.log(
+        "¿Es técnico?:",
+        esTecnico
+    );
 
     // =====================================================
     // CARGAR DATOS
@@ -80,8 +115,13 @@ function Intervenciones() {
     useEffect(() => {
 
         if (!token) {
-            setMensaje("No hay una sesión activa.");
+
+            setMensaje(
+                "No hay una sesión activa."
+            );
+
             setCargando(false);
+
             return;
         }
 
@@ -91,7 +131,7 @@ function Intervenciones() {
     }, []);
 
     // =====================================================
-    // OBTENER INTERVENCIONES
+    // CARGAR INTERVENCIONES
     // =====================================================
 
     const cargarIntervenciones = async () => {
@@ -102,29 +142,38 @@ function Intervenciones() {
                 `${API_URL}/api/intervenciones`,
                 {
                     method: "GET",
+
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization:
+                            `Bearer ${token}`
                     }
                 }
             );
 
-            const texto = await respuesta.text();
+            const texto =
+                await respuesta.text();
 
             let datos = {};
 
             try {
-                datos = texto ? JSON.parse(texto) : {};
+
+                datos =
+                    texto
+                        ? JSON.parse(texto)
+                        : {};
+
             } catch {
+
                 datos = {};
             }
 
-            if (!respuesta.ok) {
+            console.log(
+                "Respuesta intervenciones:",
+                respuesta.status,
+                datos
+            );
 
-                console.error(
-                    "Error backend intervenciones:",
-                    respuesta.status,
-                    datos
-                );
+            if (!respuesta.ok) {
 
                 setMensaje(
                     datos.mensaje ||
@@ -139,14 +188,19 @@ function Intervenciones() {
 
                 setIntervenciones(datos);
 
-            } else if (Array.isArray(datos.intervenciones)) {
+            } else if (
+                Array.isArray(
+                    datos.intervenciones
+                )
+            ) {
 
-                setIntervenciones(datos.intervenciones);
+                setIntervenciones(
+                    datos.intervenciones
+                );
 
             } else {
 
                 setIntervenciones([]);
-
             }
 
         } catch (error) {
@@ -163,13 +217,11 @@ function Intervenciones() {
         } finally {
 
             setCargando(false);
-
         }
-
     };
 
     // =====================================================
-    // OBTENER MÁQUINAS
+    // CARGAR MÁQUINAS
     // =====================================================
 
     const cargarMaquinas = async () => {
@@ -180,19 +232,28 @@ function Intervenciones() {
                 `${API_URL}/api/maquinas`,
                 {
                     method: "GET",
+
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization:
+                            `Bearer ${token}`
                     }
                 }
             );
 
-            const texto = await respuesta.text();
+            const texto =
+                await respuesta.text();
 
             let datos = {};
 
             try {
-                datos = texto ? JSON.parse(texto) : {};
+
+                datos =
+                    texto
+                        ? JSON.parse(texto)
+                        : {};
+
             } catch {
+
                 datos = {};
             }
 
@@ -211,14 +272,17 @@ function Intervenciones() {
 
                 setMaquinas(datos);
 
-            } else if (Array.isArray(datos.maquinas)) {
+            } else if (
+                Array.isArray(datos.maquinas)
+            ) {
 
-                setMaquinas(datos.maquinas);
+                setMaquinas(
+                    datos.maquinas
+                );
 
             } else {
 
                 setMaquinas([]);
-
             }
 
         } catch (error) {
@@ -227,9 +291,7 @@ function Intervenciones() {
                 "Error cargando máquinas:",
                 error
             );
-
         }
-
     };
 
     // =====================================================
@@ -249,11 +311,10 @@ function Intervenciones() {
 
         setMensaje("");
         setMostrarFormulario(true);
-
     };
 
     // =====================================================
-    // CANCELAR FORMULARIO
+    // CANCELAR
     // =====================================================
 
     const cancelarFormulario = () => {
@@ -261,6 +322,17 @@ function Intervenciones() {
         setMostrarFormulario(false);
         setMensaje("");
 
+        setMaquina("");
+        setFecha("");
+        setDescripcion("");
+        setEquiposAgregados("");
+        setArchivos([]);
+
+        if (inputArchivosRef.current) {
+
+            inputArchivosRef.current.value =
+                "";
+        }
     };
 
     // =====================================================
@@ -274,7 +346,7 @@ function Intervenciones() {
         setMensaje("");
 
         // =================================================
-        // VALIDAR SESIÓN
+        // SESIÓN
         // =================================================
 
         if (!token) {
@@ -287,7 +359,7 @@ function Intervenciones() {
         }
 
         // =================================================
-        // VALIDAR ROL
+        // ROL
         // =================================================
 
         if (!esTecnico) {
@@ -300,7 +372,7 @@ function Intervenciones() {
         }
 
         // =================================================
-        // VALIDAR MÁQUINA
+        // MÁQUINA
         // =================================================
 
         if (!maquina) {
@@ -313,7 +385,7 @@ function Intervenciones() {
         }
 
         // =================================================
-        // VALIDAR FECHA
+        // FECHA
         // =================================================
 
         if (!fecha) {
@@ -326,7 +398,7 @@ function Intervenciones() {
         }
 
         // =================================================
-        // VALIDAR ARCHIVOS
+        // ARCHIVOS
         // =================================================
 
         if (archivos.length === 0) {
@@ -346,7 +418,8 @@ function Intervenciones() {
             // FORMDATA
             // =================================================
 
-            const formulario = new FormData();
+            const formulario =
+                new FormData();
 
             formulario.append(
                 "maquina",
@@ -372,14 +445,15 @@ function Intervenciones() {
             // ARCHIVOS
             // =================================================
 
-            archivos.forEach((archivo) => {
+            archivos.forEach(
+                (archivo) => {
 
-                formulario.append(
-                    "archivos",
-                    archivo
-                );
-
-            });
+                    formulario.append(
+                        "archivos",
+                        archivo
+                    );
+                }
+            );
 
             console.log(
                 "Enviando intervención:",
@@ -388,34 +462,44 @@ function Intervenciones() {
                     fecha,
                     descripcion,
                     equiposAgregados,
-                    archivos: archivos.length
+                    cantidadArchivos:
+                        archivos.length
                 }
             );
 
             // =================================================
-            // ENVIAR AL BACKEND
+            // POST
             // =================================================
 
-            const respuesta = await fetch(
-                `${API_URL}/api/intervenciones`,
-                {
-                    method: "POST",
+            const respuesta =
+                await fetch(
+                    `${API_URL}/api/intervenciones`,
+                    {
+                        method: "POST",
 
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
+                        headers: {
+                            Authorization:
+                                `Bearer ${token}`
+                        },
 
-                    body: formulario
-                }
-            );
+                        body: formulario
+                    }
+                );
 
-            const texto = await respuesta.text();
+            const texto =
+                await respuesta.text();
 
             let datos = {};
 
             try {
-                datos = texto ? JSON.parse(texto) : {};
+
+                datos =
+                    texto
+                        ? JSON.parse(texto)
+                        : {};
+
             } catch {
+
                 datos = {};
             }
 
@@ -449,7 +533,7 @@ function Intervenciones() {
             );
 
             // =================================================
-            // LIMPIAR FORMULARIO
+            // LIMPIAR
             // =================================================
 
             setMaquina("");
@@ -460,18 +544,14 @@ function Intervenciones() {
 
             if (inputArchivosRef.current) {
 
-                inputArchivosRef.current.value = "";
-
+                inputArchivosRef.current.value =
+                    "";
             }
-
-            // =================================================
-            // OCULTAR FORMULARIO
-            // =================================================
 
             setMostrarFormulario(false);
 
             // =================================================
-            // ACTUALIZAR HISTORIAL
+            // RECARGAR
             // =================================================
 
             await cargarIntervenciones();
@@ -490,22 +570,23 @@ function Intervenciones() {
         } finally {
 
             setGuardando(false);
-
         }
-
     };
 
     // =====================================================
-    // AGREGAR ARCHIVOS
+    // SELECCIONAR ARCHIVOS
     // =====================================================
 
     const seleccionarArchivos = (e) => {
 
-        const nuevosArchivos = Array.from(
-            e.target.files || []
-        );
+        const nuevosArchivos =
+            Array.from(
+                e.target.files || []
+            );
 
-        if (nuevosArchivos.length === 0) {
+        if (
+            nuevosArchivos.length === 0
+        ) {
             return;
         }
 
@@ -517,7 +598,6 @@ function Intervenciones() {
         );
 
         e.target.value = "";
-
     };
 
     // =====================================================
@@ -529,9 +609,7 @@ function Intervenciones() {
         if (inputArchivosRef.current) {
 
             inputArchivosRef.current.click();
-
         }
-
     };
 
     // =====================================================
@@ -543,10 +621,10 @@ function Intervenciones() {
         setArchivos(
             (archivosActuales) =>
                 archivosActuales.filter(
-                    (_, i) => i !== indice
+                    (_, i) =>
+                        i !== indice
                 )
         );
-
     };
 
     // =====================================================
@@ -559,10 +637,9 @@ function Intervenciones() {
 
         if (inputArchivosRef.current) {
 
-            inputArchivosRef.current.value = "";
-
+            inputArchivosRef.current.value =
+                "";
         }
-
     };
 
     // =====================================================
@@ -576,12 +653,13 @@ function Intervenciones() {
         }
 
         return new Date(fecha)
-            .toLocaleDateString("es-CO");
-
+            .toLocaleDateString(
+                "es-CO"
+            );
     };
 
     // =====================================================
-    // NOMBRE DEL MES
+    // NOMBRE MES
     // =====================================================
 
     const nombreMes = (numero) => {
@@ -601,8 +679,10 @@ function Intervenciones() {
             "Diciembre"
         ];
 
-        return meses[numero - 1] || "Sin mes";
-
+        return (
+            meses[numero - 1] ||
+            "Sin mes"
+        );
     };
 
     // =====================================================
@@ -621,11 +701,9 @@ function Intervenciones() {
         ) {
 
             return ruta;
-
         }
 
         return `${API_URL}${ruta}`;
-
     };
 
     // =====================================================
@@ -636,9 +714,7 @@ function Intervenciones() {
 
         <div className="pagina-mantenimientos">
 
-            {/* =================================================
-                ENCABEZADO
-            ================================================= */}
+            {/* ENCABEZADO */}
 
             <div className="encabezado-pagina">
 
@@ -649,17 +725,16 @@ function Intervenciones() {
                     </h1>
 
                     <p className="subtitulo">
-                        Gestión y seguimiento de las intervenciones
-                        realizadas en los equipos hospitalarios.
+                        Gestión y seguimiento de las
+                        intervenciones realizadas en los
+                        equipos hospitalarios.
                     </p>
 
                 </div>
 
             </div>
 
-            {/* =================================================
-                INFORMACIÓN USUARIO
-            ================================================= */}
+            {/* INFORMACIÓN USUARIO */}
 
             {usuario && (
 
@@ -689,15 +764,15 @@ function Intervenciones() {
 
             )}
 
-            {/* =================================================
-                MENSAJE
-            ================================================= */}
+            {/* MENSAJE */}
 
             {mensaje && (
 
                 <div
                     className={
-                        mensaje.includes("correctamente")
+                        mensaje.includes(
+                            "correctamente"
+                        )
                             ? "mensaje exito"
                             : "mensaje error"
                     }
@@ -709,9 +784,7 @@ function Intervenciones() {
 
             )}
 
-            {/* =================================================
-                FORMULARIO
-            ================================================= */}
+            {/* FORMULARIO */}
 
             {mostrarFormulario && esTecnico ? (
 
@@ -735,7 +808,9 @@ function Intervenciones() {
                         <button
                             type="button"
                             className="boton-cancelar"
-                            onClick={cancelarFormulario}
+                            onClick={
+                                cancelarFormulario
+                            }
                         >
                             Cancelar
                         </button>
@@ -743,7 +818,9 @@ function Intervenciones() {
                     </div>
 
                     <form
-                        onSubmit={crearIntervencion}
+                        onSubmit={
+                            crearIntervencion
+                        }
                         className="formulario-mantenimiento"
                     >
 
@@ -758,7 +835,9 @@ function Intervenciones() {
                             <select
                                 value={maquina}
                                 onChange={(e) =>
-                                    setMaquina(e.target.value)
+                                    setMaquina(
+                                        e.target.value
+                                    )
                                 }
                                 required
                             >
@@ -771,16 +850,25 @@ function Intervenciones() {
                                     (maquinaItem) => (
 
                                         <option
-                                            key={maquinaItem._id}
-                                            value={maquinaItem._id}
+                                            key={
+                                                maquinaItem._id
+                                            }
+                                            value={
+                                                maquinaItem._id
+                                            }
                                         >
 
-                                            {maquinaItem.codigo}
+                                            {
+                                                maquinaItem.codigo
+                                            }
+
                                             {" - "}
-                                            {maquinaItem.nombre}
+
+                                            {
+                                                maquinaItem.nombre
+                                            }
 
                                         </option>
-
                                     )
                                 )}
 
@@ -800,7 +888,9 @@ function Intervenciones() {
                                 type="date"
                                 value={fecha}
                                 onChange={(e) =>
-                                    setFecha(e.target.value)
+                                    setFecha(
+                                        e.target.value
+                                    )
                                 }
                                 required
                             />
@@ -818,7 +908,9 @@ function Intervenciones() {
                             <textarea
                                 value={descripcion}
                                 onChange={(e) =>
-                                    setDescripcion(e.target.value)
+                                    setDescripcion(
+                                        e.target.value
+                                    )
                                 }
                                 placeholder="Describe el trabajo realizado durante la intervención..."
                                 rows="5"
@@ -835,7 +927,9 @@ function Intervenciones() {
                             </label>
 
                             <textarea
-                                value={equiposAgregados}
+                                value={
+                                    equiposAgregados
+                                }
                                 onChange={(e) =>
                                     setEquiposAgregados(
                                         e.target.value
@@ -863,17 +957,23 @@ function Intervenciones() {
                             <button
                                 type="button"
                                 className="boton-archivos"
-                                onClick={abrirSelectorArchivos}
+                                onClick={
+                                    abrirSelectorArchivos
+                                }
                             >
                                 📎 Agregar archivos
                             </button>
 
                             <input
-                                ref={inputArchivosRef}
+                                ref={
+                                    inputArchivosRef
+                                }
                                 type="file"
                                 multiple
                                 accept=".xlsx,.xls,.jpg,.jpeg,.png,.pdf"
-                                onChange={seleccionarArchivos}
+                                onChange={
+                                    seleccionarArchivos
+                                }
                                 style={{
                                     display: "none"
                                 }}
@@ -890,28 +990,40 @@ function Intervenciones() {
                                         </strong>
 
                                         <span>
-                                            {archivos.length}
+                                            {
+                                                archivos.length
+                                            }
                                         </span>
 
                                     </div>
 
                                     {archivos.map(
-                                        (archivo, indice) => (
+                                        (
+                                            archivo,
+                                            indice
+                                        ) => (
 
                                             <div
                                                 className="archivo-item"
-                                                key={`${archivo.name}-${archivo.size}-${archivo.lastModified}-${indice}`}
+                                                key={
+                                                    `${archivo.name}-${archivo.size}-${archivo.lastModified}-${indice}`
+                                                }
                                             >
 
                                                 <span>
-                                                    📄 {archivo.name}
+                                                    📄{" "}
+                                                    {
+                                                        archivo.name
+                                                    }
                                                 </span>
 
                                                 <button
                                                     type="button"
                                                     className="boton-quitar"
                                                     onClick={() =>
-                                                        quitarArchivo(indice)
+                                                        quitarArchivo(
+                                                            indice
+                                                        )
                                                     }
                                                 >
                                                     Quitar
@@ -925,7 +1037,9 @@ function Intervenciones() {
                                     <button
                                         type="button"
                                         className="boton-quitar-todos"
-                                        onClick={limpiarArchivos}
+                                        onClick={
+                                            limpiarArchivos
+                                        }
                                     >
                                         Quitar todos
                                     </button>
@@ -943,8 +1057,12 @@ function Intervenciones() {
                             <button
                                 type="button"
                                 className="boton-secundario"
-                                onClick={cancelarFormulario}
-                                disabled={guardando}
+                                onClick={
+                                    cancelarFormulario
+                                }
+                                disabled={
+                                    guardando
+                                }
                             >
                                 Cancelar
                             </button>
@@ -952,7 +1070,9 @@ function Intervenciones() {
                             <button
                                 type="submit"
                                 className="boton-guardar"
-                                disabled={guardando}
+                                disabled={
+                                    guardando
+                                }
                             >
 
                                 {guardando
@@ -969,9 +1089,7 @@ function Intervenciones() {
 
             ) : (
 
-                /* =================================================
-                   HISTORIAL
-                ================================================= */
+                /* HISTORIAL */
 
                 <div className="historial">
 
@@ -995,7 +1113,9 @@ function Intervenciones() {
                             <button
                                 type="button"
                                 className="boton-nuevo"
-                                onClick={abrirFormulario}
+                                onClick={
+                                    abrirFormulario
+                                }
                             >
 
                                 <span>
@@ -1009,6 +1129,8 @@ function Intervenciones() {
                         )}
 
                     </div>
+
+                    {/* CARGANDO */}
 
                     {cargando ? (
 
@@ -1042,7 +1164,9 @@ function Intervenciones() {
                                 <button
                                     type="button"
                                     className="boton-nuevo"
-                                    onClick={abrirFormulario}
+                                    onClick={
+                                        abrirFormulario
+                                    }
                                 >
                                     ＋ Nueva intervención
                                 </button>
@@ -1060,7 +1184,9 @@ function Intervenciones() {
 
                                     <div
                                         className="tarjeta-mantenimiento"
-                                        key={intervencion._id}
+                                        key={
+                                            intervencion._id
+                                        }
                                     >
 
                                         <div className="tarjeta-cabecera">
@@ -1087,9 +1213,11 @@ function Intervenciones() {
 
                                                 📅{" "}
 
-                                                {mostrarFecha(
-                                                    intervencion.fecha
-                                                )}
+                                                {
+                                                    mostrarFecha(
+                                                        intervencion.fecha
+                                                    )
+                                                }
 
                                             </div>
 
@@ -1104,7 +1232,9 @@ function Intervenciones() {
                                                 </strong>
 
                                                 <span>
-                                                    {intervencion.anio}
+                                                    {
+                                                        intervencion.anio
+                                                    }
                                                 </span>
 
                                             </div>
@@ -1116,9 +1246,11 @@ function Intervenciones() {
                                                 </strong>
 
                                                 <span>
-                                                    {nombreMes(
-                                                        intervencion.mes
-                                                    )}
+                                                    {
+                                                        nombreMes(
+                                                            intervencion.mes
+                                                        )
+                                                    }
                                                 </span>
 
                                             </div>
@@ -1180,15 +1312,12 @@ function Intervenciones() {
 
                                             <h4>
 
-                                                📎 Archivos
-                                                {" ("}
-
+                                                📎 Archivos (
                                                 {
                                                     intervencion.archivos?.length ||
                                                     0
                                                 }
-
-                                                {")"}
+                                                )
 
                                             </h4>
 
@@ -1227,9 +1356,12 @@ function Intervenciones() {
                                                                         <>
 
                                                                             <img
-                                                                                src={url}
+                                                                                src={
+                                                                                    url
+                                                                                }
                                                                                 alt={
-                                                                                    archivo.nombre
+                                                                                    archivo.nombre ||
+                                                                                    "Archivo"
                                                                                 }
                                                                             />
 
@@ -1240,7 +1372,9 @@ function Intervenciones() {
                                                                             </p>
 
                                                                             <a
-                                                                                href={url}
+                                                                                href={
+                                                                                    url
+                                                                                }
                                                                                 target="_blank"
                                                                                 rel="noreferrer"
                                                                                 className="enlace-archivo"
@@ -1265,7 +1399,9 @@ function Intervenciones() {
                                                                             </p>
 
                                                                             <a
-                                                                                href={url}
+                                                                                href={
+                                                                                    url
+                                                                                }
                                                                                 target="_blank"
                                                                                 rel="noreferrer"
                                                                                 download
@@ -1279,9 +1415,7 @@ function Intervenciones() {
                                                                     )}
 
                                                                 </div>
-
                                                             );
-
                                                         }
                                                     )}
 
@@ -1310,9 +1444,9 @@ function Intervenciones() {
 
             )}
 
-            {/* =================================================
+            {/* =====================================================
                 ESTILOS
-            ================================================= */}
+            ===================================================== */}
 
             <style>{`
 
@@ -1925,7 +2059,6 @@ function Intervenciones() {
                         width: 100%;
                         height: 180px;
                     }
-
                 }
 
             `}</style>
@@ -1933,5 +2066,3 @@ function Intervenciones() {
         </div>
     );
 }
-
-export default Intervenciones;
