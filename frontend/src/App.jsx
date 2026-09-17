@@ -6,7 +6,10 @@ import {
     useLocation
 } from "react-router-dom";
 
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState
+} from "react";
 
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
@@ -27,7 +30,9 @@ function RutaProtegida({ token }) {
 
     const location = useLocation();
 
+
     if (!token) {
+
         return (
             <Navigate
                 to="/login"
@@ -37,9 +42,12 @@ function RutaProtegida({ token }) {
                 }}
             />
         );
+
     }
 
+
     return <Layout />;
+
 }
 
 
@@ -66,7 +74,8 @@ function App() {
 
         const revisarSesion = () => {
 
-            const tokenActual = localStorage.getItem("token");
+            const tokenActual =
+                localStorage.getItem("token");
 
             setToken(tokenActual);
 
@@ -101,108 +110,132 @@ function App() {
 
             <Routes>
 
-                {/* =====================================
+                {/* ==========================================
                     LOGIN
-                ===================================== */}
+                ========================================== */}
 
                 <Route
                     path="/login"
-                    element={<Login />}
+                    element={
+                        token
+                            ? (
+                                <Navigate
+                                    to="/dashboard"
+                                    replace
+                                />
+                            )
+                            : (
+                                <Login />
+                            )
+                    }
                 />
 
 
-                {/* =====================================
+                {/* ==========================================
                     REGISTRO
-                ===================================== */}
+                ========================================== */}
 
                 <Route
                     path="/registro"
-                    element={<Registro />}
+                    element={
+                        token
+                            ? (
+                                <Navigate
+                                    to="/dashboard"
+                                    replace
+                                />
+                            )
+                            : (
+                                <Registro />
+                            )
+                    }
                 />
 
 
-                {/* =====================================
+                {/* ==========================================
                     RUTAS PROTEGIDAS
-                ===================================== */}
+                ========================================== */}
 
                 <Route
                     element={
-                        <RutaProtegida token={token} />
+                        <RutaProtegida
+                            token={token}
+                        />
                     }
                 >
 
                     <Route
                         path="/dashboard"
-                        element={<Dashboard />}
+                        element={
+                            <Dashboard />
+                        }
                     />
 
                     <Route
                         path="/mantenimientos"
-                        element={<Mantenimientos />}
+                        element={
+                            <Mantenimientos />
+                        }
                     />
 
                     <Route
                         path="/intervenciones"
-                        element={<Intervenciones />}
+                        element={
+                            <Intervenciones />
+                        }
                     />
 
                     <Route
                         path="/maquinas"
-                        element={<Maquinas />}
+                        element={
+                            <Maquinas />
+                        }
                     />
 
                     <Route
                         path="/usuarios"
-                        element={<Usuarios />}
+                        element={
+                            <Usuarios />
+                        }
                     />
 
                 </Route>
 
 
-                {/* =====================================
+                {/* ==========================================
                     RUTA PRINCIPAL
-                ===================================== */}
+                ========================================== */}
 
                 <Route
                     path="/"
                     element={
-                        token
-                            ? (
-                                <Navigate
-                                    to="/dashboard"
-                                    replace
-                                />
-                            )
-                            : (
-                                <Navigate
-                                    to="/login"
-                                    replace
-                                />
-                            )
+                        <Navigate
+                            to={
+                                token
+                                    ? "/dashboard"
+                                    : "/login"
+                            }
+                            replace
+                        />
                     }
                 />
 
 
-                {/* =====================================
+                {/* ==========================================
                     RUTA NO ENCONTRADA
-                ===================================== */}
+                ========================================== */}
 
                 <Route
                     path="*"
                     element={
-                        token
-                            ? (
-                                <Navigate
-                                    to="/dashboard"
-                                    replace
-                                />
-                            )
-                            : (
-                                <Navigate
-                                    to="/login"
-                                    replace
-                                />
-                            )
+                        <Navigate
+                            to={
+                                token
+                                    ? "/dashboard"
+                                    : "/login"
+                            }
+                            replace
+                        />
                     }
                 />
 
@@ -211,6 +244,8 @@ function App() {
         </BrowserRouter>
 
     );
+
 }
+
 
 export default App;

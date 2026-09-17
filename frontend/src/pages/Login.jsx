@@ -17,21 +17,15 @@ function Login() {
 
     const navigate = useNavigate();
 
-
     // =====================================================
     // ESTADOS
     // =====================================================
 
     const [usuario, setUsuario] = useState("");
-
     const [password, setPassword] = useState("");
-
     const [mostrarPassword, setMostrarPassword] = useState(false);
-
     const [recordar, setRecordar] = useState(false);
-
     const [cargando, setCargando] = useState(false);
-
     const [error, setError] = useState("");
 
 
@@ -45,23 +39,15 @@ function Login() {
 
         setError("");
 
-
         // Validar campos
-
-        if (!usuario || !password) {
-
-            setError(
-                "Ingresa tu usuario y contraseña."
-            );
-
+        if (!usuario.trim() || !password) {
+            setError("Ingresa tu usuario y contraseña.");
             return;
         }
-
 
         try {
 
             setCargando(true);
-
 
             // =================================================
             // PETICIÓN AL BACKEND
@@ -77,14 +63,26 @@ function Login() {
                     },
 
                     body: JSON.stringify({
-                        usuario,
+                        usuario: usuario.trim(),
                         password
                     })
                 }
             );
 
 
-            const datos = await respuesta.json();
+            // =================================================
+            // LEER RESPUESTA
+            // =================================================
+
+            const texto = await respuesta.text();
+
+            let datos = {};
+
+            try {
+                datos = texto ? JSON.parse(texto) : {};
+            } catch {
+                datos = {};
+            }
 
 
             // =================================================
@@ -102,17 +100,26 @@ function Login() {
 
 
             // =================================================
-            // GUARDAR TOKEN
+            // VALIDAR TOKEN
             // =================================================
 
-            if (datos.token) {
+            if (!datos.token) {
 
-                localStorage.setItem(
-                    "token",
-                    datos.token
+                throw new Error(
+                    "El servidor no devolvió un token de acceso."
                 );
 
             }
+
+
+            // =================================================
+            // GUARDAR TOKEN
+            // =================================================
+
+            localStorage.setItem(
+                "token",
+                datos.token
+            );
 
 
             // =================================================
@@ -142,8 +149,6 @@ function Login() {
             // =================================================
             // AVISAR A APP.JSX
             // =================================================
-            // Esto permite que App.jsx detecte inmediatamente
-            // que acabamos de iniciar sesión.
 
             window.dispatchEvent(
                 new Event("authChanged")
@@ -169,7 +174,6 @@ function Login() {
                 error
             );
 
-
             setError(
                 error.message ||
                 "No se pudo iniciar sesión."
@@ -193,13 +197,11 @@ function Login() {
 
         <div className="min-h-screen bg-slate-100 flex">
 
-
             {/* =================================================
                 PANEL IZQUIERDO
             ================================================= */}
 
             <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative overflow-hidden">
-
 
                 {/* Fondo médico */}
 
@@ -217,7 +219,6 @@ function Login() {
 
 
                 <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-
 
                     {/* Logo */}
 
@@ -239,7 +240,7 @@ function Login() {
 
                         Biomedic
                         <span className="text-orange-500">
-                            Projects
+                            {" "}Projects
                         </span>
 
                     </h1>
@@ -257,6 +258,7 @@ function Login() {
 
                     <div className="mt-10 space-y-5">
 
+                        {/* Mantenimientos */}
 
                         <div className="flex items-center gap-4">
 
@@ -284,6 +286,8 @@ function Login() {
                         </div>
 
 
+                        {/* Seguimiento */}
+
                         <div className="flex items-center gap-4">
 
                             <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
@@ -310,6 +314,8 @@ function Login() {
                         </div>
 
 
+                        {/* Seguridad */}
+
                         <div className="flex items-center gap-4">
 
                             <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
@@ -335,7 +341,6 @@ function Login() {
 
                         </div>
 
-
                     </div>
 
                 </div>
@@ -349,9 +354,7 @@ function Login() {
 
             <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
 
-
                 <div className="w-full max-w-md">
-
 
                     {/* Logo móvil */}
 
@@ -384,16 +387,12 @@ function Login() {
 
 
                         <h2 className="text-3xl font-bold text-slate-800">
-
                             Bienvenido
-
                         </h2>
 
 
                         <p className="text-slate-500 mt-2">
-
                             Ingresa a Biomedic Projects
-
                         </p>
 
                     </div>
@@ -408,15 +407,12 @@ function Login() {
                         className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200"
                     >
 
-
                         {/* Usuario */}
 
                         <div className="mb-5">
 
                             <label className="block text-sm font-semibold text-slate-700 mb-2">
-
                                 Usuario
-
                             </label>
 
 
@@ -449,9 +445,7 @@ function Login() {
                         <div className="mb-5">
 
                             <label className="block text-sm font-semibold text-slate-700 mb-2">
-
                                 Contraseña
-
                             </label>
 
 
@@ -490,13 +484,9 @@ function Login() {
                                 >
 
                                     {mostrarPassword ? (
-
                                         <EyeOff size={20} />
-
                                     ) : (
-
                                         <Eye size={20} />
-
                                     )}
 
                                 </button>
@@ -533,9 +523,7 @@ function Login() {
                         </div>
 
 
-                        {/* =================================================
-                            ERROR
-                        ================================================= */}
+                        {/* Error */}
 
                         {error && (
 
@@ -548,9 +536,7 @@ function Login() {
                         )}
 
 
-                        {/* =================================================
-                            BOTÓN LOGIN
-                        ================================================= */}
+                        {/* Botón */}
 
                         <button
                             type="submit"
@@ -598,7 +584,6 @@ function Login() {
 
                         </div>
 
-
                     </form>
 
 
@@ -610,7 +595,6 @@ function Login() {
 
                     </p>
 
-
                 </div>
 
             </div>
@@ -618,7 +602,6 @@ function Login() {
         </div>
 
     );
-
 }
 
 
