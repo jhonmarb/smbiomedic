@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 
 import Mantenimiento from "../models/Mantenimiento.js";
 
@@ -8,9 +9,26 @@ import { proteger } from "../middleware/auth.js";
 
 import upload from "../middleware/upload.js";
 
-
 const router = express.Router();
 
+// ==================================================
+// CONFIGURACIÓN DE RUTAS
+// ==================================================
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const carpetaProyecto =
+    path.resolve(
+        __dirname,
+        ".."
+    );
+
+const carpetaUploads =
+    path.join(
+        carpetaProyecto,
+        "uploads"
+    );
 
 // ==================================================
 // OBTENER MANTENIMIENTOS
@@ -40,11 +58,9 @@ router.get(
                         fecha: -1
                     });
 
-
             res.json(
                 mantenimientos
             );
-
 
         } catch (error) {
 
@@ -52,7 +68,6 @@ router.get(
                 "Error obteniendo mantenimientos:",
                 error
             );
-
 
             res.status(500).json({
 
@@ -66,7 +81,6 @@ router.get(
     }
 );
 
-
 // ==================================================
 // CREAR MANTENIMIENTO
 // ==================================================
@@ -75,10 +89,6 @@ router.post(
     "/",
 
     proteger,
-
-    // =================================================
-    // RECIBIR MÚLTIPLES ARCHIVOS
-    // =================================================
 
     upload.array(
         "archivos",
@@ -112,7 +122,6 @@ router.post(
                 "===================================="
             );
 
-
             // =========================================
             // VALIDAR MÁQUINA
             // =========================================
@@ -127,7 +136,6 @@ router.post(
                 });
 
             }
-
 
             // =========================================
             // VALIDAR FECHA
@@ -144,12 +152,10 @@ router.post(
 
             }
 
-
             const fecha =
                 new Date(
                     req.body.fecha
                 );
-
 
             if (
                 isNaN(
@@ -166,7 +172,6 @@ router.post(
 
             }
 
-
             // =========================================
             // OBTENER AÑO Y MES
             // =========================================
@@ -174,10 +179,8 @@ router.post(
             const anio =
                 fecha.getFullYear();
 
-
             const mes =
                 fecha.getMonth() + 1;
-
 
             const mesCarpeta =
                 String(
@@ -187,20 +190,22 @@ router.post(
                     "0"
                 );
 
-
             // =========================================
-            // CREAR CARPETA FINAL
+            // CARPETA FINAL
             // =========================================
 
             const carpetaMantenimiento =
-                path.resolve(
-                    "uploads",
+                path.join(
+                    carpetaUploads,
                     "mantenimientos",
                     String(anio),
                     mesCarpeta,
-                    req.body.maquina
+                    String(req.body.maquina)
                 );
 
+            // =========================================
+            // CREAR CARPETA
+            // =========================================
 
             fs.mkdirSync(
                 carpetaMantenimiento,
@@ -209,13 +214,16 @@ router.post(
                 }
             );
 
+            console.log(
+                "Carpeta mantenimiento:",
+                carpetaMantenimiento
+            );
 
             // =========================================
-            // MOVER ARCHIVOS TEMPORALES
+            // MOVER ARCHIVOS
             // =========================================
 
             const archivos = [];
-
 
             for (
                 const file of (req.files || [])
@@ -227,12 +235,15 @@ router.post(
                         file.filename
                     );
 
-
                 fs.renameSync(
                     file.path,
                     rutaFinal
                 );
 
+                console.log(
+                    "Archivo guardado:",
+                    rutaFinal
+                );
 
                 archivos.push({
 
@@ -240,7 +251,7 @@ router.post(
                         file.originalname,
 
                     ruta:
-                        `/uploads/mantenimientos/${anio}/${mesCarpeta}/${req.body.maquina}/${file.filename}`,
+                        `/uploads/mantenimientos/${anio}/${mesCarpeta}/${req.body.maquina}/${encodeURIComponent(file.filename)}`,
 
                     tipo:
                         file.mimetype
@@ -248,7 +259,6 @@ router.post(
                 });
 
             }
-
 
             // =========================================
             // CREAR MANTENIMIENTO
@@ -283,7 +293,6 @@ router.post(
 
                 });
 
-
             // =========================================
             // RESPUESTA
             // =========================================
@@ -296,7 +305,6 @@ router.post(
                 mantenimiento
 
             });
-
 
         } catch (error) {
 
@@ -315,7 +323,6 @@ router.post(
             console.error(
                 "===================================="
             );
-
 
             // =========================================
             // ELIMINAR ARCHIVOS TEMPORALES
@@ -354,7 +361,6 @@ router.post(
 
             }
 
-
             res.status(500).json({
 
                 mensaje:
@@ -367,6 +373,5 @@ router.post(
 
     }
 );
-
 
 export default router;
