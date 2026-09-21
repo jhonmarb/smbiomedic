@@ -1,7 +1,6 @@
 import express from "express";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+
+import { createClient } from "@supabase/supabase-js";
 
 import Mantenimiento from "../models/Mantenimiento.js";
 
@@ -9,26 +8,45 @@ import { proteger } from "../middleware/auth.js";
 
 import upload from "../middleware/upload.js";
 
+
 const router = express.Router();
 
+
 // ==================================================
-// CONFIGURACIÓN DE RUTAS
+// CONFIGURACIÓN DE SUPABASE
 // ==================================================
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const supabaseUrl =
+    process.env.SUPABASE_URL?.trim();
 
-const carpetaProyecto =
-    path.resolve(
-        __dirname,
-        ".."
+const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+const supabaseBucket =
+    process.env.SUPABASE_BUCKET?.trim() ||
+    "archivos";
+
+
+if (
+    !supabaseUrl ||
+    !supabaseKey
+) {
+
+    console.error(
+        "ERROR: Faltan las variables de Supabase."
     );
 
-const carpetaUploads =
-    path.join(
-        carpetaProyecto,
-        "uploads"
-    );
+}
+
+
+const supabase =
+    supabaseUrl && supabaseKey
+        ? createClient(
+            supabaseUrl,
+            supabaseKey
+        )
+        : null;
+
 
 // ==================================================
 // OBTENER MANTENIMIENTOS
@@ -36,6 +54,7 @@ const carpetaUploads =
 
 router.get(
     "/",
+
     proteger,
 
     async (req, res) => {
@@ -58,9 +77,11 @@ router.get(
                         fecha: -1
                     });
 
+
             res.json(
                 mantenimientos
             );
+
 
         } catch (error) {
 
@@ -68,6 +89,7 @@ router.get(
                 "Error obteniendo mantenimientos:",
                 error
             );
+
 
             res.status(500).json({
 
@@ -81,11 +103,13 @@ router.get(
     }
 );
 
+
 // ==================================================
 // CREAR MANTENIMIENTO
 // ==================================================
 
 router.post(
+
     "/",
 
     proteger,
@@ -96,6 +120,9 @@ router.post(
     ),
 
     async (req, res) => {
+
+        const archivosSubidos = [];
+
 
         try {
 
@@ -119,8 +146,30 @@ router.post(
             );
 
             console.log(
+                "BUCKET SUPABASE:",
+                supabaseBucket
+            );
+
+            console.log(
                 "===================================="
             );
+
+
+            // =========================================
+            // COMPROBAR SUPABASE
+            // =========================================
+
+            if (!supabase) {
+
+                return res.status(500).json({
+
+                    mensaje:
+                        "Supabase no está configurado correctamente"
+
+                });
+
+            }
+
 
             // =========================================
             // VALIDAR MÁQUINA
@@ -137,6 +186,7 @@ router.post(
 
             }
 
+
             // =========================================
             // VALIDAR FECHA
             // =========================================
@@ -152,10 +202,12 @@ router.post(
 
             }
 
+
             const fecha =
                 new Date(
                     req.body.fecha
                 );
+
 
             if (
                 isNaN(
@@ -172,6 +224,7 @@ router.post(
 
             }
 
+
             // =========================================
             // OBTENER AÑO Y MES
             // =========================================
@@ -179,8 +232,10 @@ router.post(
             const anio =
                 fecha.getFullYear();
 
+
             const mes =
                 fecha.getMonth() + 1;
+
 
             const mesCarpeta =
                 String(
@@ -190,60 +245,134 @@ router.post(
                     "0"
                 );
 
-            // =========================================
-            // CARPETA FINAL
-            // =========================================
-
-            const carpetaMantenimiento =
-                path.join(
-                    carpetaUploads,
-                    "mantenimientos",
-                    String(anio),
-                    mesCarpeta,
-                    String(req.body.maquina)
-                );
 
             // =========================================
-            // CREAR CARPETA
-            // =========================================
-
-            fs.mkdirSync(
-                carpetaMantenimiento,
-                {
-                    recursive: true
-                }
-            );
-
-            console.log(
-                "Carpeta mantenimiento:",
-                carpetaMantenimiento
-            );
-
-            // =========================================
-            // MOVER ARCHIVOS
+            // SUBIR ARCHIVOS A SUPABASE
             // =========================================
 
             const archivos = [];
 
+
             for (
-                const file of (req.files || [])
+                const file of (
+                    req.files || []
+                )
             ) {
 
-                const rutaFinal =
-                    path.join(
-                        carpetaMantenimiento,
-                        file.filename
-                    );
+                // =====================================
+                // NOMBRE SEGURO
+                // =====================================
 
-                fs.renameSync(
-                    file.path,
-                    rutaFinal
-                );
+                const nombreSeguro =
+                    file.originalname
+                        .replace(
+                            /[^a-zA-Z0-9._-]/g,
+                            "_"
+                        );
+
+
+                // =====================================
+                // NOMBRE ÚNICO
+                // =====================================
+
+                const nombreArchivo =
+                    Date.now() +
+                    "-" +
+                    Math.round(
+                        Math.random() * 1E9
+                    ) +
+                    "-" +
+                    nombreSeguro;
+
+
+                // =====================================
+                // RUTA DENTRO DE SUPABASE
+                // =====================================
+
+                const rutaSupabase =
+                    `mantenimientos/${anio}/${mesCarpeta}/${req.body.maquina}/${nombreArchivo}`;
+
 
                 console.log(
-                    "Archivo guardado:",
-                    rutaFinal
+                    "Subiendo archivo:",
+                    rutaSupabase
                 );
+
+
+                // =====================================
+                // SUBIR ARCHIVO
+                // =====================================
+
+                const resultado =
+                    await supabase
+                        .storage
+                        .from(
+                            supabaseBucket
+                        )
+                        .upload(
+                            rutaSupabase,
+                            file.buffer,
+                            {
+
+                                contentType:
+                                    file.mimetype,
+
+                                upsert:
+                                    false
+
+                            }
+                        );
+
+
+                if (
+                    resultado.error
+                ) {
+
+                    console.error(
+                        "Error subiendo archivo a Supabase:",
+                        resultado.error
+                    );
+
+
+                    throw new Error(
+                        `No se pudo subir ${file.originalname}: ${resultado.error.message}`
+                    );
+
+                }
+
+
+                // Guardamos la ruta para poder
+                // eliminarla si MongoDB falla.
+
+                archivosSubidos.push(
+                    rutaSupabase
+                );
+
+
+                // =====================================
+                // OBTENER URL PÚBLICA
+                // =====================================
+
+                const urlPublica =
+                    supabase
+                        .storage
+                        .from(
+                            supabaseBucket
+                        )
+                        .getPublicUrl(
+                            rutaSupabase
+                        );
+
+
+                console.log(
+                    "URL archivo:",
+                    urlPublica.data.publicUrl
+                );
+
+
+                // =====================================
+                // GUARDAR INFORMACIÓN
+                // =====================================
 
                 archivos.push({
 
@@ -251,7 +380,9 @@ router.post(
                         file.originalname,
 
                     ruta:
-                        `/uploads/mantenimientos/${anio}/${mesCarpeta}/${req.body.maquina}/${encodeURIComponent(file.filename)}`,
+                        urlPublica
+                            .data
+                            .publicUrl,
 
                     tipo:
                         file.mimetype
@@ -259,6 +390,7 @@ router.post(
                 });
 
             }
+
 
             // =========================================
             // CREAR MANTENIMIENTO
@@ -293,6 +425,7 @@ router.post(
 
                 });
 
+
             // =========================================
             // RESPUESTA
             // =========================================
@@ -305,6 +438,7 @@ router.post(
                 mantenimiento
 
             });
+
 
         } catch (error) {
 
@@ -324,42 +458,54 @@ router.post(
                 "===================================="
             );
 
+
             // =========================================
-            // ELIMINAR ARCHIVOS TEMPORALES
+            // ELIMINAR ARCHIVOS DE SUPABASE
+            // SI FALLA MONGODB
             // =========================================
 
-            if (req.files) {
+            if (
+                supabase &&
+                archivosSubidos.length > 0
+            ) {
 
-                for (
-                    const file of req.files
-                ) {
+                try {
 
-                    try {
-
-                        if (
-                            fs.existsSync(
-                                file.path
+                    const resultadoEliminar =
+                        await supabase
+                            .storage
+                            .from(
+                                supabaseBucket
                             )
-                        ) {
-
-                            fs.unlinkSync(
-                                file.path
+                            .remove(
+                                archivosSubidos
                             );
 
-                        }
 
-                    } catch (errorArchivo) {
+                    if (
+                        resultadoEliminar.error
+                    ) {
 
                         console.error(
-                            "No se pudo eliminar archivo temporal:",
-                            errorArchivo
+                            "No se pudieron eliminar archivos de Supabase:",
+                            resultadoEliminar.error
                         );
 
                     }
 
+                } catch (
+                    errorEliminar
+                ) {
+
+                    console.error(
+                        "Error eliminando archivos de Supabase:",
+                        errorEliminar
+                    );
+
                 }
 
             }
+
 
             res.status(500).json({
 
@@ -372,6 +518,8 @@ router.post(
         }
 
     }
+
 );
+
 
 export default router;

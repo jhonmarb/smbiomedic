@@ -744,7 +744,15 @@ function Mantenimientos() {
 
 
     // =====================================================
-    // URL ARCHIVO
+    // URL DEL ARCHIVO
+    // =====================================================
+    //
+    // Archivos nuevos:
+    // Supabase → URL completa
+    //
+    // Archivos antiguos:
+    // Render → /uploads/...
+    //
     // =====================================================
 
     const obtenerUrlArchivo = (ruta) => {
@@ -755,15 +763,39 @@ function Mantenimientos() {
 
         }
 
+
+        // =================================================
+        // ARCHIVOS NUEVOS DE SUPABASE
+        // =================================================
+
         if (
-            ruta.startsWith("http")
+            ruta.startsWith("http://") ||
+            ruta.startsWith("https://")
         ) {
 
             return ruta;
 
         }
 
-        return `${API_URL}${ruta}`;
+
+        // =================================================
+        // ARCHIVOS ANTIGUOS DE RENDER
+        // =================================================
+
+        if (
+            ruta.startsWith("/uploads/")
+        ) {
+
+            return `${API_URL}${ruta}`;
+
+        }
+
+
+        // =================================================
+        // OTRAS RUTAS
+        // =================================================
+
+        return ruta;
 
     };
 
@@ -892,9 +924,6 @@ function Mantenimientos() {
 
             {/* =================================================
                 FORMULARIO
-                IMPORTANTE:
-                El formulario permanece montado.
-                Solo cambia display.
             ================================================= */}
 
             <div
@@ -1218,7 +1247,6 @@ function Mantenimientos() {
 
             {/* =================================================
                 HISTORIAL
-                TAMBIÉN PERMANECE MONTADO
             ================================================= */}
 
             <div

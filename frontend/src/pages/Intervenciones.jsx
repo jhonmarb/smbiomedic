@@ -688,6 +688,21 @@ export default function Intervenciones() {
     // =====================================================
     // URL ARCHIVO
     // =====================================================
+    // IMPORTANTE:
+    //
+    // Los archivos nuevos vienen desde Supabase
+    // con una URL completa:
+    //
+    // https://....supabase.co/storage/v1/object/public/...
+    //
+    // En ese caso NO debemos agregar API_URL.
+    //
+    // Los archivos antiguos que todavía tengan:
+    //
+    // /uploads/...
+    //
+    // siguen intentando cargarse desde Render.
+    // =====================================================
 
     const obtenerUrlArchivo = (ruta) => {
 
@@ -695,6 +710,8 @@ export default function Intervenciones() {
             return "";
         }
 
+        // URL completa de Supabase
+        // o cualquier URL externa
         if (
             ruta.startsWith("http://") ||
             ruta.startsWith("https://")
@@ -703,7 +720,18 @@ export default function Intervenciones() {
             return ruta;
         }
 
-        return `${API_URL}${ruta}`;
+        // Compatibilidad con archivos antiguos
+        // almacenados en Render
+        if (
+            ruta.startsWith("/uploads/")
+        ) {
+
+            return `${API_URL}${ruta}`;
+        }
+
+        // Si ya es una ruta válida,
+        // devolverla sin modificar
+        return ruta;
     };
 
     // =====================================================
