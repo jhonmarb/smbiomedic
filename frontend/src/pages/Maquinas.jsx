@@ -147,7 +147,9 @@ function Maquinas() {
             );
 
 
+            // =========================================
             // LIMPIAR FORMULARIO
+            // =========================================
 
             setNombre("");
 
@@ -156,7 +158,25 @@ function Maquinas() {
             setArchivo(null);
 
 
+            // =========================================
+            // LIMPIAR INPUT DE ARCHIVO
+            // =========================================
+
+            const inputArchivo =
+                document.getElementById(
+                    "archivoHojaVida"
+                );
+
+            if (inputArchivo) {
+
+                inputArchivo.value = "";
+
+            }
+
+
+            // =========================================
             // ACTUALIZAR LISTA
+            // =========================================
 
             cargarMaquinas();
 
@@ -184,9 +204,25 @@ function Maquinas() {
 
     const descargarArchivo = (ruta) => {
 
+        if (!ruta) {
+
+            setMensaje(
+                "No hay archivo disponible"
+            );
+
+            return;
+
+        }
+
+
+        // =========================================
+        // SUPABASE ENTREGA LA URL COMPLETA
+        // =========================================
+
         window.open(
-            `https://smbiomedic.onrender.com${ruta}`,
-            "_blank"
+            ruta,
+            "_blank",
+            "noopener,noreferrer"
         );
 
     };
@@ -597,6 +633,7 @@ function Maquinas() {
                             </label>
 
                             <input
+                                id="archivoHojaVida"
                                 type="file"
                                 accept=".xlsx,.xls"
                                 onChange={(e) =>
@@ -757,4 +794,3 @@ function Maquinas() {
 }
 
 export default Maquinas;
-

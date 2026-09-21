@@ -1,7 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
-import path from "path";
-import fs from "fs";
+import { createClient } from "@supabase/supabase-js";
 
 import Maquina from "../models/Maquina.js";
 import { proteger } from "../middleware/auth.js";
@@ -11,23 +10,15 @@ const router = express.Router();
 
 
 // =====================================================
-// CARPETA DE ARCHIVOS DE MÁQUINAS
+// SUPABASE
 // =====================================================
 
-const carpetaMaquinas = path.resolve(
-    "uploads",
-    "maquinas"
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-
-// Crear carpeta si no existe
-
-fs.mkdirSync(
-    carpetaMaquinas,
-    {
-        recursive: true
-    }
-);
+const BUCKET = process.env.SUPABASE_BUCKET;
 
 
 // =====================================================
@@ -133,7 +124,33 @@ router.post(
             console.log(
                 "ARCHIVO:",
                 req.file
+                    ? req.file.originalname
+                    : "Sin archivo"
             );
+
+
+            // =========================================
+            // VALIDAR SUPABASE
+            // =========================================
+
+            if (
+                !process.env.SUPABASE_URL ||
+                !process.env.SUPABASE_SERVICE_ROLE_KEY ||
+                !BUCKET
+            ) {
+
+                console.error(
+                    "Faltan variables de Supabase"
+                );
+
+                return res.status(500).json({
+
+                    mensaje:
+                        "El servidor no tiene configurado Supabase"
+
+                });
+
+            }
 
 
             // =========================================
@@ -182,7 +199,7 @@ router.post(
 
 
             // =========================================
-            // VALIDAR
+            // VALIDAR DATOS
             // =========================================
 
             if (!nombre) {
@@ -218,38 +235,92 @@ router.post(
 
             if (req.file) {
 
-                // =====================================
-                // RUTA TEMPORAL
-                // =====================================
-
-                const archivoTemporal =
-                    req.file.path;
-
-
-                // =====================================
-                // RUTA FINAL
-                // =====================================
-
-                const archivoFinal =
-                    path.join(
-                        carpetaMaquinas,
-                        req.file.filename
-                    );
-
-
-                // =====================================
-                // MOVER ARCHIVO
-                // =====================================
-
-                fs.renameSync(
-                    archivoTemporal,
-                    archivoFinal
+                console.log(
+                    "Subiendo archivo a Supabase..."
                 );
 
 
+                // =====================================
+                // CREAR NOMBRE ÚNICO
+                // =====================================
+
+                const extension =
+                    req.file.originalname.includes(".")
+                        ? "." +
+                          req.file.originalname
+                              .split(".")
+                              .pop()
+                              .toLowerCase()
+                        : "";
+
+
+                const nombreArchivo =
+                    `maquinas/${Date.now()}-${Math.random()
+                        .toString(36)
+                        .substring(2, 10)}${extension}`;
+
+
+                // =====================================
+                // SUBIR A SUPABASE
+                // =====================================
+
+                const { error: errorSubida } =
+                    await supabase.storage
+                        .from(BUCKET)
+                        .upload(
+                            nombreArchivo,
+                            req.file.buffer,
+                            {
+                                contentType:
+                                    req.file.mimetype,
+
+                                upsert: false
+                            }
+                        );
+
+
+                if (errorSubida) {
+
+                    console.error(
+                        "ERROR SUBIENDO A SUPABASE:",
+                        errorSubida
+                    );
+
+                    return res.status(500).json({
+
+                        mensaje:
+                            `No se pudo subir ${req.file.originalname}: ${errorSubida.message}`
+
+                    });
+
+                }
+
+
                 console.log(
-                    "ARCHIVO MOVIDO A:",
-                    archivoFinal
+                    "Archivo subido correctamente:",
+                    nombreArchivo
+                );
+
+
+                // =====================================
+                // OBTENER URL PÚBLICA
+                // =====================================
+
+                const { data: urlData } =
+                    supabase.storage
+                        .from(BUCKET)
+                        .getPublicUrl(
+                            nombreArchivo
+                        );
+
+
+                const urlArchivo =
+                    urlData.publicUrl;
+
+
+                console.log(
+                    "URL DEL ARCHIVO:",
+                    urlArchivo
                 );
 
 
@@ -263,10 +334,10 @@ router.post(
                         req.file.originalname,
 
                     nombreServidor:
-                        req.file.filename,
+                        nombreArchivo,
 
                     ruta:
-                        `/uploads/maquinas/${req.file.filename}`,
+                        urlArchivo,
 
                     tipo:
                         req.file.mimetype
@@ -395,7 +466,7 @@ router.delete(
 
 
             // =========================================
-            // ELIMINAR ARCHIVO FÍSICO
+            // ELIMINAR ARCHIVO DE SUPABASE
             // =========================================
 
             if (
@@ -403,20 +474,26 @@ router.delete(
                 maquina.hojaVida.nombreServidor
             ) {
 
-                const archivo =
-                    path.join(
-                        carpetaMaquinas,
-                        maquina.hojaVida.nombreServidor
+                const { error: errorEliminar } =
+                    await supabase.storage
+                        .from(BUCKET)
+                        .remove([
+                            maquina.hojaVida.nombreServidor
+                        ]);
+
+
+                if (errorEliminar) {
+
+                    console.error(
+                        "ERROR ELIMINANDO ARCHIVO DE SUPABASE:",
+                        errorEliminar
                     );
 
-
-                if (fs.existsSync(archivo)) {
-
-                    fs.unlinkSync(archivo);
+                } else {
 
                     console.log(
-                        "Archivo eliminado:",
-                        archivo
+                        "Archivo eliminado de Supabase:",
+                        maquina.hojaVida.nombreServidor
                     );
 
                 }
@@ -439,7 +516,6 @@ router.delete(
                     "Máquina eliminada correctamente"
 
             });
-
 
         } catch (error) {
 
